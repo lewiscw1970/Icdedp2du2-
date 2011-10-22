@@ -24,9 +24,10 @@ def server(version='8.4'):
     """
     I can haz PostgreSQL server
     """
-    issue = run('echo | cat /etc/issue')
+    with settings( hide('running', 'stdout')):
+        issue = run('echo | cat /etc/issue')
     if check_ubuntu_version(issue):
-        package('postgresql')
+        package('postgresql-%s' % version)
         started('postgresql')
     else:
         package('postgresql-%s' % version)
