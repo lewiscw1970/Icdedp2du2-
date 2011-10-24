@@ -10,7 +10,7 @@ def user_exists(name):
     """
     with settings(hide('running', 'stdout', 'stderr', 'warnings'), warn_only=True):
         res = sudo('''psql -t -A -c "SELECT COUNT(*) FROM pg_user WHERE usename = '%(name)s';"''' % locals(), user='postgres')
-    return (res == "1")
+    return ("1" in res)
 
 
 def create_user(name, password):

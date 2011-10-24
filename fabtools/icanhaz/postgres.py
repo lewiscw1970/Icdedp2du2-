@@ -28,9 +28,9 @@ def user(name, password):
         create_user(name, password)
 
 
-def database(name, owner, template='template0'):
+def database(name, owner, template='template0', locale='en_US.UTF-8'):
     """
     I can haz PostgreSQL database
     """
     if not database_exists(name):
-        create_database(name, owner, template)
+        create_database(name, owner, template=template, locale=locale)
