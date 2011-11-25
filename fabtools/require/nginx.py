@@ -2,6 +2,7 @@
 Idempotent API for managing nginx sites
 """
 from fabric.api import *
+from fabric.colors import red
 from fabtools.files import upload_template, is_link
 from fabtools.require.deb import package
 from fabtools.require.files import template_file
@@ -16,7 +17,7 @@ def server():
     started('nginx')
 
 
-def site(server_name, template_contents=None, template_source=None, enabled=True, **kwargs):
+def site(server_name, template_contents=None, template_source=None, enabled=True, test_config=True, **kwargs):
     """
     Require an nginx site
     """
@@ -36,6 +37,11 @@ def site(server_name, template_contents=None, template_source=None, enabled=True
     if enabled:
         if not is_link(link_filename):
             sudo("ln -s %(config_filename)s %(link_filename)s" % locals())
+        if test_config:
+            with settings(warn_only=True):
+                if sudo("nginx -t").return_code > 0:
+                    print red("Warning! %(server_name)s site is corrupted! Disabling for safety!" % locals())
+                    sudo("rm %(link_filename)s" % locals())
     else:
         if is_link(link_filename):
             sudo("rm %(link_filename)s" % locals())
