@@ -12,10 +12,22 @@ def exists(name):
     Check if a user exists.
     """
     with settings(hide('running', 'stdout', 'warnings'), warn_only=True):
-        return sudo('getent passwd %(name)s' % locals()).succeeded
+        cmd = run('getent passwd %(name)s' % locals())
+        name += ':'
+        if cmd.succeeded and name in cmd:
+            try:
+                name, x, uid, gid, gecos, home, shell = cmd.split(':')
+            except ValueError:
+                # can't unpack user. just return True
+                return True
+            else:
+                return dict(name=name, uid=uid, gid=gid, gecos=gecos
+                            home=home, shell=shell)
+        return False
 
 
-def create(name, home=None, shell=None, uid=None, gid=None, groups=None):
+def create(name, home=None, shell=None, uid=None, gid=None, groups=None,
+           gecos=None, disabled_password=False, disabled_login=False):
     """
     Create a new user.
 
@@ -37,8 +49,14 @@ def create(name, home=None, shell=None, uid=None, gid=None, groups=None):
     if home:
         options.append('--home-dir "%s"' % home)
     if shell:
-        options.append('--shell "%s"' % (shell))
+        options.append('--shell "%s"' % shell)
     if uid:
         options.append('--uid %s' % uid)
+    if gecos:
+        options.append('--gecos "%s"' % gecos)
+    if disabled_password:
+        options.append('--disabled-password')
+    if disabled_login:
+        options.append('--disabled-login')
     options = " ".join(options)
     sudo('useradd %(options)s %(name)s' % locals())
