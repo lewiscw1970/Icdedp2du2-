@@ -16,3 +16,8 @@ import fabtools.user
 
 import fabtools.require
 icanhaz = require
+
+from collections import defaultdict
+default_distro = 'deb'
+distros = defaultdict(lambda: default_distro)
+del defaultdict
