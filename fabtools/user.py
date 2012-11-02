@@ -48,4 +48,4 @@ def create(name, home=None, shell=None, uid=None, gid=None, groups=None,
     if disabled_login:
         options.append('--disabled-login')
     options = " ".join(options)
-    sudo('useradd %(options)s %(name)s' % locals())
+    sudo('adduser %(options)s %(name)s' % locals())
