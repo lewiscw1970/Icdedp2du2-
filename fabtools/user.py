@@ -16,7 +16,7 @@ def exists(name):
 
 
 def create(name, home=None, shell=None, uid=None, gid=None, groups=None,
-           gecos=None, disabled_password=False, disabled_login=False):
+           gecos=None, disabled_password=False, disabled_login=False, no_create_home=False, system=False):
     """
     Create a new user.
 
@@ -47,5 +47,9 @@ def create(name, home=None, shell=None, uid=None, gid=None, groups=None,
         options.append('--disabled-password')
     if disabled_login:
         options.append('--disabled-login')
+    if no_create_home:
+        options.append('--no-create-home')
+    if system:
+        options.append('--system')
     options = " ".join(options)
     sudo('useradd %(options)s %(name)s' % locals())
