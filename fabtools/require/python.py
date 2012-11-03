@@ -106,6 +106,8 @@ def virtualenv(directory, system_site_packages=False, python=None, use_sudo=Fals
         options = ['--quiet']
         if system_site_packages:
             options.append('--system-site-packages')
+        else:
+            options.append('--no-site-packages')
         if python:
             options.append('--python=%s' % python)
         options = ' '.join(options)
