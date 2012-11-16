@@ -131,4 +131,6 @@ def instance(name, version=VERSION, **kwargs):
 
     # Restart if needed
     if config.changed:
+        import fabtools
         fabtools.supervisor.restart_process(process_name)
+
