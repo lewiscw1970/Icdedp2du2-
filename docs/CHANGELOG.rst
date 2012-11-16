@@ -1,6 +1,32 @@
 Changelog
 =========
 
+Version 0.8.1 (2012-10-26)
+--------------------------
+
+* Really fix pip version parsing issue
+* Upgrade default pip version to 1.2.1
+
+Version 0.8.0 (2012-10-26)
+--------------------------
+
+* Improve user module (thanks to Gaël Pasgrimaud)
+* Fix locale support on Debian (thanks to Olivier Kautz)
+* Fix version number in documentation (thanks to Guillaume Ayoub)
+* Fix potential issue with pip version parsing
+
+Version 0.7.0 (2012-10-13)
+--------------------------
+
+* Fix changed directory owner requirement (thanks to Troy J. Farrell)
+* Add functions to get a file's owner, group and mode
+
+Version 0.6.0 (2012-10-13)
+--------------------------
+
+* Add support for Node.js (thanks to Frank Rousseau)
+* Fix dependency on Fabric >= 1.4.0 (thanks to Laurent Bachelier)
+
 Version 0.5.1 (2012-09-21)
 --------------------------
 
