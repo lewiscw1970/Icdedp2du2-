@@ -11,6 +11,8 @@ and installing packages using `pip`_.
 """
 import posixpath
 
+from fabric.api import env
+
 from fabtools.files import is_file
 from fabtools.python import *
 from fabtools.python_distribute import is_distribute_installed, install_distribute
@@ -89,7 +91,7 @@ def requirements(filename, **kwargs):
     install_requirements(filename, **kwargs)
 
 
-def virtualenv(directory, system_site_packages=False, python=None, use_sudo=False, user=None):
+def virtualenv(directory=None, system_site_packages=False, python=None, use_sudo=False, user=None):
     """
     Require a Python `virtual environment`_.
 
@@ -99,8 +101,22 @@ def virtualenv(directory, system_site_packages=False, python=None, use_sudo=Fals
 
         require.python.virtualenv('/path/to/venv')
 
+    If ``directory`` is not specified, ``env.virtualenv`` will be used.
+
+    ::
+
+        from fabric.api import env
+        from fabtools import require
+
+        env.virtualenv = '/path/to/venv'
+
+        require.python.virtualenv()
+
     .. _virtual environment: http://www.virtualenv.org/
     """
+    if not (directory or env.virtualenv):
+        raise ValueError('Either directory parameter or env.virtualenv need to be set')
+    directory = directory or env.virtualenv
     package('virtualenv', use_sudo=True)
     if not is_file(posixpath.join(directory, 'bin', 'python')):
         options = ['--quiet']

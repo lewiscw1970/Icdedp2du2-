@@ -146,7 +146,7 @@ def virtualenv(directory=None, local=False):
         with virtualenv('/path/to/virtualenv'):
             run('python -V')
 
-    If directory is not specified, env.virtualenv will be used.
+    If ``directory`` is not specified, ``env.virtualenv`` will be used.
 
     ::
 
