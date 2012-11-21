@@ -44,7 +44,7 @@ def create_user(name, password, createdb=False, createrole=False, superuser=Fals
     options = ' '.join((
         'CREATEDB' if createdb else 'NOCREATEDB',
         'CREATEROLE' if createrole else 'NOCREATEROLE',
-        'SUPERUSER' if supervisor else 'NOSUPERUSER',
+        'SUPERUSER' if superuser else 'NOSUPERUSER',
         '%s \'%s\'' % (password_opt, password)
     ))
     _run_as_pg('''psql -c "CREATE USER %(name)s WITH %(options)s;"''' % locals())
