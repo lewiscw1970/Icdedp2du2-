@@ -134,7 +134,7 @@ def install_requirements(filename, upgrade=False, use_mirrors=True, use_sudo=Fal
 
 
 @contextmanager
-def virtualenv(directory, local=False):
+def virtualenv(directory=None, local=False):
     """
     Context manager to activate an existing Python `virtual environment`_.
 
@@ -146,8 +146,22 @@ def virtualenv(directory, local=False):
         with virtualenv('/path/to/virtualenv'):
             run('python -V')
 
+    If directory is not specified, env.virtualenv will be used.
+
+    ::
+
+        from fabric.api import run, env
+        from fabtools.python import virtualenv
+
+        env.virtualenv = '/path/to/virtualenv'
+
+        with virtualenv():
+            run('python -V')
+
     .. _virtual environment: http://www.virtualenv.org/
     """
+    if not (directory or env.virtualenv):
+        raise ValueError('Either directory parameter or env.virtualenv need to be set')
     join = os.path.join if local else posixpath.join
-    with prefix('. "%s"' % join(directory, 'bin', 'activate')):
+    with prefix('. "%s"' % join(directory or env.virtualenv, 'bin', 'activate')):
         yield
