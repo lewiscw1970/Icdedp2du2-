@@ -27,7 +27,7 @@ def user_exists(name):
     return (res == "1")
 
 
-def create_user(name, password):
+def create_user(name, password, createdb=False, createrole=False, superuser=False, encrypted=False):
     """
     Create a PostgreSQL user.
 
@@ -40,7 +40,14 @@ def create_user(name, password):
             fabtools.postgres.create_user('dbuser', password='somerandomstring')
 
     """
-    _run_as_pg('''psql -c "CREATE USER %(name)s WITH PASSWORD '%(password)s';"''' % locals())
+    password_opt = 'ENCRYPTED PASSWORD' if encrypted else 'PASSWORD'
+    options = ' '.join((
+        'CREATEDB' if createdb else 'NOCREATEDB',
+        'CREATEROLE' if createrole else 'NOCREATEROLE',
+        'SUPERUSER' if supervisor else 'NOSUPERUSER',
+        '%s \'%s\'' % (password_opt, password)
+    ))
+    _run_as_pg('''psql -c "CREATE USER %(name)s WITH %(options)s;"''' % locals())
 
 
 def database_exists(name):
