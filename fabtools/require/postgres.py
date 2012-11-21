@@ -44,7 +44,7 @@ def server(version=None):
     started(_service_name(version))
 
 
-def user(name, password):
+def user(name, password, createdb=False, createrole=False, superuser=False, encrypted=False):
     """
     Require a PostgreSQL user.
 
@@ -56,7 +56,7 @@ def user(name, password):
 
     """
     if not user_exists(name):
-        create_user(name, password)
+        create_user(name, password, createdb, createrole, superuser, encrypted)
 
 
 def database(name, owner, template='template0', encoding='UTF8',
