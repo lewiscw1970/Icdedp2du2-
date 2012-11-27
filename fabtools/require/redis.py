@@ -10,6 +10,7 @@ This module provides high-level tools for managing `Redis`_ instances.
 from __future__ import with_statement
 
 from fabtools.files import is_file, watch
+from fabtools import supervisor
 from fabtools.deb import *
 
 
@@ -131,4 +132,4 @@ def instance(name, version=VERSION, **kwargs):
 
     # Restart if needed
     if config.changed:
-        fabtools.supervisor.restart_process(process_name)
+        supervisor.restart_process(process_name)
