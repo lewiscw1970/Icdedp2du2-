@@ -63,7 +63,7 @@ def guest(name_or_ctid):
     _orig_put = fabric.sftp.SFTP.put
 
     def run_guest_command(command, shell=True, pty=False,
-        combine_stderr=True, sudo=False, user=None):
+        combine_stderr=True, sudo=False, user=None, quiet=False):
         """
         Run command inside a guest container
         """
