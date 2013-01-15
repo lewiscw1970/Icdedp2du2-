@@ -138,3 +138,17 @@ def proxied_site(server_name, enabled=True, **kwargs):
         )
     """
     site(server_name, template_contents=PROXIED_SITE_TEMPLATE, enabled=enabled, **kwargs)
+
+
+def remove_default():
+    """
+    Disable nginx default site.
+
+    ::
+
+        from fabtools import require
+
+        require.nginx.remove_default()
+    """
+    sudo('rm -f /etc/nginx/sites-enabled/default')
+    sudo('rm -f /etc/nginx/sites-available/default')
