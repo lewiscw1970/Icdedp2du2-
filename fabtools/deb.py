@@ -80,7 +80,11 @@ def install(packages, update=False, options=None):
     options.append("--quiet")
     options.append("--assume-yes")
     options = " ".join(options)
-    sudo('%(manager)s install %(options)s %(packages)s' % locals())
+    cmd = '%(manager)s install %(options)s %(packages)s' % locals()
+    if env['user'] == 'root':
+        run(cmd)
+    else:
+        sudo(cmd)
 
 
 def uninstall(packages, purge=False, options=None):
