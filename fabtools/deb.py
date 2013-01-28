@@ -9,6 +9,7 @@ and repositories.
 from __future__ import with_statement
 
 from fabric.api import *
+from fabtools._utils import root_run
 
 
 MANAGER = 'apt-get'
@@ -81,10 +82,7 @@ def install(packages, update=False, options=None):
     options.append("--assume-yes")
     options = " ".join(options)
     cmd = '%(manager)s install %(options)s %(packages)s' % locals()
-    if env['user'] == 'root':
-        run(cmd)
-    else:
-        sudo(cmd)
+    root_run(cmd)
 
 
 def uninstall(packages, purge=False, options=None):
