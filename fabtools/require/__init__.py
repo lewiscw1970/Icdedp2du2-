@@ -7,6 +7,7 @@ import fabtools.require.mysql
 import fabtools.require.nodejs
 import fabtools.require.openvz
 import fabtools.require.python
+import fabtools.require.pythonz
 import fabtools.require.redis
 import fabtools.require.service
 import fabtools.require.shorewall
