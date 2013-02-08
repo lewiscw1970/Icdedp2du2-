@@ -31,18 +31,25 @@ def restart():
 
 
 def _get_link_filename(site_name):
-    return '/etc/apache2/sites-enabled/%s.conf' % site_name
+    return '/etc/apache2/sites-enabled/%s' % site_name
+
+
+def _get_site_name(site_name):
+    if site_name not in ('default', 'default-ssl'):
+        site_name += '.conf'
+
+    return site_name
 
 
 def is_site_enabled(site_name):
-    return is_link(_get_link_filename(site_name))
+    return is_link(_get_link_filename(_get_site_name(site_name)))
 
 
 def enable_site(site_name):
     if not is_site_enabled(site_name):
-        root_run('a2ensite %s.conf' % site_name)
+        root_run('a2ensite %s.conf' % _get_site_name(site_name))
 
 
 def disable_site(site_name):
     if is_site_enabled(site_name):
-        root_run('a2dissite %s.conf' % site_name)
+        root_run('a2dissite %s.conf' % _get_site_name(site_name))
