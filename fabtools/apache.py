@@ -47,9 +47,9 @@ def is_site_enabled(site_name):
 
 def enable_site(site_name):
     if not is_site_enabled(site_name):
-        root_run('a2ensite %s.conf' % _get_site_name(site_name))
+        root_run('a2ensite %s' % _get_site_name(site_name))
 
 
 def disable_site(site_name):
     if is_site_enabled(site_name):
-        root_run('a2dissite %s.conf' % _get_site_name(site_name))
+        root_run('a2dissite %s' % _get_site_name(site_name))
