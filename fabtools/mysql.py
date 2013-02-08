@@ -110,3 +110,11 @@ def create_database(name, owner=None, owner_host='localhost', charset='utf8', co
             }, **kwargs)
 
     puts("Created MySQL database '%s'." % name)
+
+
+def drop_database(name):
+    with settings(hide('running')):
+        _query("DROP DATABASE IF EXISTS %s;" % name)
+        _query("use mysql; DELETE FROM db WHERE Db = '%s';" % name)
+
+    puts("Drop MySQL database '%s'." % name)
