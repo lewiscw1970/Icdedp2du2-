@@ -7,7 +7,8 @@ This module provides tools for creating MySQL users and databases.
 """
 from __future__ import with_statement
 
-from fabric.api import *
+from fabric.api import *  # NOQA
+from fabtools._utils import root_run
 
 
 def prompt_password(user='root'):
@@ -21,7 +22,7 @@ def _query(query, use_sudo=True, **kwargs):
     """
     Run a MySQL query.
     """
-    func = use_sudo and sudo or run
+    func = use_sudo and root_run or run
 
     user = kwargs.get('mysql_user') or env.get('mysql_user')
     password = kwargs.get('mysql_password') or env.get('mysql_password')
