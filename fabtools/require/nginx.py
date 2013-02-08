@@ -10,12 +10,13 @@ web server and managing the configuration of web sites.
 """
 from __future__ import with_statement
 
-from fabric.api import *
+from fabric.api import *  # NOQA
 from fabric.colors import red
-from fabtools.files import upload_template, is_link
+from fabtools.files import is_link
 from fabtools.require.deb import package
 from fabtools.require.files import template_file
 from fabtools.require.service import started
+from fabtools._utils import root_run
 
 
 def server():
@@ -75,19 +76,19 @@ def site(server_name, template_contents=None, template_source=None, enabled=True
     link_filename = '/etc/nginx/sites-enabled/%s.conf' % server_name
     if enabled:
         if not is_link(link_filename):
-            sudo("ln -s %(config_filename)s %(link_filename)s" % locals())
+            root_run("ln -s %(config_filename)s %(link_filename)s" % locals())
 
         # Make sure we don't break the config
         if check_config:
             with settings(hide('running', 'warnings'), warn_only=True):
-                if sudo("nginx -t").return_code > 0:
+                if root_run("nginx -t").return_code > 0:
                     print red("Error in %(server_name)s nginx site config (disabling for safety)" % locals())
-                    sudo("rm %(link_filename)s" % locals())
+                    root_run("rm %(link_filename)s" % locals())
     else:
         if is_link(link_filename):
-            sudo("rm %(link_filename)s" % locals())
+            root_run("rm %(link_filename)s" % locals())
 
-    sudo("/etc/init.d/nginx reload")
+    root_run("/etc/init.d/nginx reload")
 
 
 PROXIED_SITE_TEMPLATE = """\
@@ -138,3 +139,26 @@ def proxied_site(server_name, enabled=True, **kwargs):
         )
     """
     site(server_name, template_contents=PROXIED_SITE_TEMPLATE, enabled=enabled, **kwargs)
+
+
+def site_enabled(server_name):
+    if server_name != 'default':
+        server_name += '.conf'
+
+    config_filename = '/etc/nginx/sites-available/%s' % server_name  # NOQA
+    link_filename = '/etc/nginx/sites-enabled/%s' % server_name
+    if not is_link(link_filename):
+        root_run("ln -s %(config_filename)s %(link_filename)s" % locals())
+
+    root_run("/etc/init.d/nginx reload")
+
+
+def site_disabled(server_name):
+    if server_name != 'default':
+        server_name += '.conf'
+
+    link_filename = '/etc/nginx/sites-enabled/%s' % server_name
+    if is_link(link_filename):
+        root_run("rm %(link_filename)s" % locals())
+
+    root_run("/etc/init.d/nginx reload")

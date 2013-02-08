@@ -23,6 +23,7 @@ setup(
     license='BSD',
     install_requires=[
         "fabric>=1.4.0",
+        "tempita"
     ],
     setup_requires=[],
     tests_require=[
