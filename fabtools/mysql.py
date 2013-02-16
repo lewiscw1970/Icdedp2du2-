@@ -118,3 +118,11 @@ def drop_database(name):
         _query("use mysql; DELETE FROM db WHERE Db = '%s';" % name)
 
     puts("Drop MySQL database '%s'." % name)
+
+
+def drop_user(name):
+    with settings(hide('running')):
+        _query("DROP USER '%s'@'localhost';" % name)
+        _query("use mysql; DELETE FROM user WHERE User = '%s';" % name)
+
+    puts("Drop MySQL user '%s'." % name)
