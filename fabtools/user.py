@@ -39,8 +39,8 @@ def _crypt_password(password):
 
 
 def create(name, comment=None, home=None, create_home=None, skeleton_dir=None,
-    group=None, create_group=True, extra_groups=None, password=None,
-    system=False, shell=None, uid=None):
+           group=None, create_group=True, extra_groups=None, password=None,
+           system=False, shell=None, uid=None, keys_file=None):
     """
     Create a new user and its home directory.
 
@@ -108,9 +108,13 @@ def create(name, comment=None, home=None, create_home=None, skeleton_dir=None,
     args = ' '.join(args)
     run_as_root('useradd %s' % args)
 
+    if keys_file:
+        authorize_keys(name, keys_file)
+
 
 def modify(name, comment=None, home=None, move_current_home=False, group=None,
-    extra_groups=None, login_name=None, password=None, shell=None, uid=None):
+           extra_groups=None, login_name=None, password=None, shell=None,
+           uid=None, keys_file=None):
     """
     Modify an existing user.
 
@@ -149,3 +153,36 @@ def modify(name, comment=None, home=None, move_current_home=False, group=None,
         args.append(name)
         args = ' '.join(args)
         run_as_root('usermod %s' % args)
+
+    if keys_file:
+        authorize_keys(name, keys_file)
+
+
+from fabtools.require.files import (
+    directory as _require_directory,
+    file as _require_file,
+)
+
+
+def authorize_keys(name, keys_file):
+    """
+    Add  public keys from specified file to user authorized keys.
+
+    Example::
+
+        import fabtools
+
+        if fabtools.user.exists('alice'):
+            fabtools.user.authorize_keys('alice', '~/.ssh/id_rsa.pub')
+
+    """
+
+    user_home = _get_user_home(name)
+    _require_directory(user_home + '/.ssh',
+                       mode='700', owner=name, use_sudo=True)
+    _require_file(user_home + '/.ssh/authorized_keys', mode=600, owner=name,
+                  source=keys_file, use_sudo=True)
+
+
+def _get_user_home(name):
+    return run('echo ~' + name)
