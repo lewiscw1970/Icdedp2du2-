@@ -29,7 +29,7 @@ def _settings_dict(config):
     port = config['Port']
 
     settings['user'] = user
-    settings['hosts'] = [hostname]
+    settings['host_string'] = hostname
     settings['port'] = port
     settings['key_filename'] = config['IdentityFile']
     settings['forward_agent'] = (config.get('ForwardAgent', 'no') == 'yes')
