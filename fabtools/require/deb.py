@@ -46,7 +46,7 @@ def source(name, uri, distribution, *components):
         update_index()
 
 
-def ppa(name):
+def ppa(name, auto_yes=False):
     """
     Require a `PPA`_ package source.
 
@@ -55,7 +55,7 @@ def ppa(name):
         from fabtools import require
 
         # Node.js packages by Chris Lea
-        require.deb.ppa('ppa:chris-lea/node.js')
+        require.deb.ppa('ppa:chris-lea/node.js', auto_yes=True)
 
     .. _PPA: https://help.launchpad.net/Packaging/PPA
     """
@@ -66,7 +66,11 @@ def ppa(name):
 
     if not is_file(source):
         package('python-software-properties')
-        run_as_root('add-apt-repository %s' % name, pty=False)
+        if auto_yes:
+            prompt = '-y '
+        else:
+            prompt = ''
+        run_as_root('add-apt-repository %s %s' % (prompt, name), pty=False)
         update_index()
 
 
