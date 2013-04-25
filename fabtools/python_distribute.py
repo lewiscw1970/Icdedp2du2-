@@ -44,7 +44,7 @@ def install_distribute():
     """
     with cd("/tmp"):
         run("curl --silent -O http://python-distribute.org/distribute_setup.py")
-        run_as_root("python distribute_setup.py")
+        run("python distribute_setup.py")
 
 
 def install(packages, upgrade=False, use_sudo=False):
