@@ -27,12 +27,17 @@ def _query(query, use_sudo=True, **kwargs):
 
     user = kwargs.get('mysql_user') or env.get('mysql_user')
     password = kwargs.get('mysql_password') or env.get('mysql_password')
+    host = kwargs.get('mysql_host')
+    
+    if not host:
+        host="localhost"
     if user and not password:
         password = prompt_password(user)
 
-    return func('mysql --batch --raw --skip-column-names --user=%(user)s --password=%(password)s --execute="%(query)s"' % {
+    return func('mysql --batch --raw --skip-column-names --user=%(user)s --password=%(password)s --host=%(host)s --execute="%(query)s"' % {
         'user': user,
         'password': password,
+        'host': host,
         'query': query
     })
 
