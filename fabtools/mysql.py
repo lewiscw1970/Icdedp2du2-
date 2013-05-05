@@ -27,7 +27,7 @@ def _query(query, use_sudo=True, **kwargs):
 
     user = kwargs.get('mysql_user') or env.get('mysql_user')
     password = kwargs.get('mysql_password') or env.get('mysql_password')
-    if user and not password:
+    if user and password is None:
         password = prompt_password(user)
 
     return func('mysql --batch --raw --skip-column-names --user=%(user)s --password=%(password)s --execute="%(query)s"' % {
