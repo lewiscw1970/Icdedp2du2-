@@ -57,9 +57,7 @@ def install_pip():
             fabtools.python.install_pip()
 
     """
-    with cd('/tmp'):
-        run('curl --silent -O https://raw.github.com/pypa/pip/master/contrib/get-pip.py')
-        run_as_root('python get-pip.py', pty=False)
+    run_as_root('curl --silent https://raw.github.com/pypa/pip/master/contrib/get-pip.py | python')
 
 
 def is_installed(package):
