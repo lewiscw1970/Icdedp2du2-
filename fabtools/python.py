@@ -91,8 +91,11 @@ def install(packages, upgrade=False, use_mirrors=True, use_sudo=False,
         fabtools.python.install(['pkg1', 'pkg2'], use_sudo=True)
 
     """
-    if not isinstance(packages, basestring):
-        packages = ' '.join(packages)
+    if isinstance(packages, basestring):
+        packages = packages.split()
+
+    packages = ' '.join('"%s"' % package for package in packages)
+
     options = []
     if use_mirrors:
         options.append('--use-mirrors')
