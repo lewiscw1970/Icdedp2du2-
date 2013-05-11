@@ -4,8 +4,14 @@ PostgreSQL users and databases
 """
 from __future__ import with_statement
 
+from fabric.api import cd, hide, run, settings
 from fabtools.files import is_file, watch
-from fabtools.postgres import *
+from fabtools.postgres import (
+    create_database,
+    create_user,
+    database_exists,
+    user_exists,
+)
 from fabtools.require.deb import package
 from fabtools.require.service import started, restarted
 from fabtools.require.system import locale as require_locale
@@ -44,9 +50,13 @@ def server(version=None):
     started(_service_name(version))
 
 
-def user(name, password):
+def user(name, password, superuser=False, createdb=False,
+         createrole=False, inherit=True, login=True, connection_limit=None,
+         encrypted_password=False):
     """
-    Require a PostgreSQL user.
+    Require the existence of a PostgreSQL user. The password and options
+    provided will only be applied when creating a new user (existing
+    users will *not* be modified).
 
     ::
 
@@ -54,9 +64,13 @@ def user(name, password):
 
         require.postgres.user('dbuser', password='somerandomstring')
 
+        require.postgres.user('dbuser2', password='s3cr3t',
+            createdb=True, create_role=True, connection_limit=20)
+
     """
     if not user_exists(name):
-        create_user(name, password)
+        create_user(name, password, superuser, createdb, createrole, inherit,
+                    login, connection_limit, encrypted_password)
 
 
 def database(name, owner, template='template0', encoding='UTF8',
@@ -79,4 +93,4 @@ def database(name, owner, template='template0', encoding='UTF8',
             restarted(_service_name())
 
         create_database(name, owner, template=template, encoding=encoding,
-            locale=locale)
+                        locale=locale)

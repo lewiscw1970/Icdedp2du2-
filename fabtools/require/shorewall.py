@@ -4,11 +4,21 @@ Shorewall firewall
 """
 from __future__ import with_statement
 
+from fabric.api import hide, puts, settings, shell_env
 from fabric.contrib.files import sed
 
 from fabtools.files import watch
 from fabtools.service import start, stop, restart
-from fabtools.shorewall import *
+from fabtools.shorewall import (
+    Ping,
+    SSH,
+    HTTP,
+    HTTPS,
+    SMTP,
+    is_started,
+    is_stopped,
+)
+
 from fabtools.require.deb import package
 from fabtools.require.files import file
 
@@ -244,7 +254,7 @@ CONFIG_FILES = [
 
 
 def firewall(zones=None, interfaces=None, policy=None, rules=None,
-    routestopped=None, masq=None):
+             routestopped=None, masq=None):
     """
     Ensure that a firewall is configured.
 
@@ -281,7 +291,7 @@ def firewall(zones=None, interfaces=None, policy=None, rules=None,
         if is_started():
             restart('shorewall')
 
-    with settings(hide('running')):
+    with settings(hide('running'), shell_env()):
         sed('/etc/default/shorewall', 'startup=0', 'startup=1', use_sudo=True)
 
 

@@ -1,6 +1,94 @@
 Changelog
 =========
 
+Version 0.14.0dev (unreleased)
+------------------------------
+
+* Upgrade default pip version to 1.3.1
+* Add support for Vagrant 1.1 providers in functional tests
+* Add ``fabtools.system.cpus`` to get the host's CPU count
+* Less verbose output
+* Move OS detection functions to ``fabtools.system``
+* Better support for Red Hat based systems
+* Upgrade default Node.js version to 0.10.4
+* Upgrade default Redis version to 2.6.12
+* Improved git support
+
+Version 0.13.0 (2013-03-15)
+---------------------------
+
+* Add support for managing remote git repositories (Andreas Kaiser)
+* Add intersphinx to docs (Andreas Kaiser)
+* Add HTTP proxy support to speed up functional tests
+* Upgrade default Node.js version to 0.10.0
+* Upgrade default Redis version to 2.6.11
+* Upgrade default Oracle JDK version to 7u17-b02
+* Fix vagrant support (thanks to Dominique Lederer and anentropic)
+
+Version 0.12.0 (2013-03-04)
+---------------------------
+
+* Do not create home directory for system users
+* Fix ``pkg.is_installed`` on SmartOS (thanks to Anthony Scalisi)
+* Fix ``system.get_arch`` (thanks to Kamil Chmielewski)
+* Add support for installing Oracle JDK (thanks to Kamil Chmielewski)
+* Add support for creating Postgres schemas (thanks to Michael Bommarito)
+* Fix ``mysql.user_exists`` (thanks to Serge Travin)
+
+Version 0.11.0 (2013-02-15)
+---------------------------
+
+* Fix requiring an existing user (thanks to Jonathan Peel)
+* Upgrade default Redis version to 2.6.10
+* Upgrade default Node.js version to 0.8.19
+* Better support for remote hosts where sudo is not installed
+
+Version 0.10.0 (2013-02-12)
+---------------------------
+
+* Enable/disable nginx sites (thanks to Sébastien Béal)
+* Add support for SmartOS (thanks to Anthony Scalisi)
+* Add support for RHEL/CentOS/SL (thanks to Anthony Scalisi)
+
+Version 0.9.4 (2013-01-10)
+--------------------------
+
+* Add files missing in 0.9.3 (thanks to Stéfane Fermigier)
+
+Version 0.9.3 (2013-01-08)
+--------------------------
+
+* Fix bugs in user creation (thanks pahaz and Stéphane Klein)
+* Add support for group creation
+
+Version 0.9.2 (2013-01-05)
+--------------------------
+
+* Add syntax highlighting in README (thanks to Artur Dryomov)
+
+Version 0.9.1 (2013-01-04)
+--------------------------
+
+* Fix documentation formatting issues
+
+Version 0.9.0 (2013-01-04)
+--------------------------
+
+* Improve user creation and modification
+* Add support for BSD / OS X to ``files.owner``, ``files.group``,
+  ``files.mode`` and ``files.md5sum`` (thanks to Troy J. Farrell)
+* Improve PostgreSQL user creation (thanks to Troy J. Farrell
+  and Axel Haustant)
+* Add ``reload`` and ``force_reload`` operations to the ``service``
+  module (thanks to Axel Haustant)
+* Fix missing import in ``require.redis`` (thanks to svevang
+  and Sébastien Béal)
+* Add ``clear`` option to Python virtualenv (thanks to pahaz)
+* Upgrade default Redis version to 2.6.7
+* Upgrade default Node.js version to 0.8.16
+* Decrease verbosity of some operations
+* Speed up functional tests
+
 Version 0.8.1 (2012-10-26)
 --------------------------
 

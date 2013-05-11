@@ -4,7 +4,7 @@ Vagrant helpers
 """
 from __future__ import with_statement
 
-from fabric.api import *
+from fabric.api import env, hide, local, settings, task
 
 
 def ssh_config(name=''):
@@ -24,13 +24,15 @@ def ssh_config(name=''):
 def _settings_dict(config):
     settings = {}
 
+    # Build host string
     user = config['User']
     hostname = config['HostName']
     port = config['Port']
-
     settings['host_string'] = "%s@%s:%s" % (user, hostname, port)
-    settings['user'] = user
-    settings['key_filename'] = config['IdentityFile']
+
+    # Strip leading and trailing double quotes introduced by vagrant 1.1
+    settings['key_filename'] = config['IdentityFile'].strip('"')
+
     settings['forward_agent'] = (config.get('ForwardAgent', 'no') == 'yes')
     settings['disable_known_hosts'] = True
 

@@ -10,7 +10,9 @@ the ``easy_install`` command provided by `distribute`_.
 """
 from __future__ import with_statement
 
-from fabric.api import *
+from fabric.api import cd, run
+
+from fabtools.utils import run_as_root
 
 
 def is_distribute_installed():
@@ -19,9 +21,11 @@ def is_distribute_installed():
 
     .. _distribute: http://packages.python.org/distribute/
     """
-    with settings(hide('running', 'warnings', 'stderr', 'stdout'), warn_only=True):
-        res = run('easy_install --version')
-        return res.succeeded and (res.find('distribute') >= 0)
+    cmd = '''python -c "import pkg_resources;\
+                        print pkg_resources.get_distribution('distribute')"
+          '''
+    res = run(cmd, quiet=True)
+    return res.succeeded and (res.find('distribute') >= 0)
 
 
 def install_distribute():
@@ -40,7 +44,7 @@ def install_distribute():
     """
     with cd("/tmp"):
         run("curl --silent -O http://python-distribute.org/distribute_setup.py")
-        sudo("python distribute_setup.py")
+        run_as_root("python distribute_setup.py")
 
 
 def install(packages, upgrade=False, use_sudo=False):
@@ -62,7 +66,7 @@ def install(packages, upgrade=False, use_sudo=False):
               which uses ``pip`` to install packages.
 
     """
-    func = use_sudo and sudo or run
+    func = use_sudo and run_as_root or run
     if not isinstance(packages, basestring):
         packages = " ".join(packages)
     options = []

@@ -8,8 +8,16 @@ and creating MySQL users and databases.
 """
 from __future__ import with_statement
 
-from fabtools.mysql import *
+from fabric.api import hide, settings
+
 from fabtools.deb import is_installed, preseed_package
+from fabtools.mysql import (
+    create_database,
+    create_user,
+    database_exists,
+    prompt_password,
+    user_exists,
+)
 from fabtools.require.deb import package
 from fabtools.require.service import started
 
@@ -53,9 +61,11 @@ def user(name, password, **kwargs):
 
     Example::
 
+        from fabric.api import settings
         from fabtools import require
 
-        require.mysql.user('dbuser', 'somerandomstring')
+        with settings(mysql_user='root', mysql_password='s3cr3t'):
+            require.mysql.user('dbuser', 'somerandomstring')
 
     """
     if not user_exists(name, **kwargs):
@@ -70,9 +80,11 @@ def database(name, **kwargs):
 
     Example::
 
+        from fabric.api import settings
         from fabtools import require
 
-        require.mysql.database('myapp', owner='dbuser')
+        with settings(mysql_user='root', mysql_password='s3cr3t'):
+            require.mysql.database('myapp', owner='dbuser')
 
     """
     if not database_exists(name, **kwargs):

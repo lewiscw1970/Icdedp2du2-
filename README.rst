@@ -12,18 +12,24 @@ Using ``fabtools.require`` allows you to use a more declarative style, similar t
 Installing
 ==========
 
-To install the latest release from `PyPI <http://pypi.python.org/pypi/fabtools>`_::
+To install the latest release from `PyPI <http://pypi.python.org/pypi/fabtools>`_
+
+.. code-block:: console
 
     $ pip install fabtools
 
-To install the latest development version from `GitHub <https://github.com/ronnix/fabtools>`_::
+To install the latest development version from `GitHub <https://github.com/ronnix/fabtools>`_
+
+.. code-block:: console
 
     $ pip install git+git://github.com/ronnix/fabtools.git
 
 Example
 =======
 
-Here is an example ``fabfile.py`` using ``fabtools``::
+Here is an example ``fabfile.py`` using ``fabtools``
+
+.. code-block:: python
 
     from fabric.api import *
     from fabtools import require
@@ -71,8 +77,23 @@ Supported targets
 
 ``fabtools`` currently supports the following target operating systems:
 
-* Ubuntu 10.04 (lucid)
-* Ubuntu 12.04 (precise)
 * Debian 6.0 (squeeze)
 
-Contributions to help support other Linux distributions are welcome!
+* Ubuntu 10.04 (lucid)
+* Ubuntu 12.04 (precise)
+
+* RHEL 5/6
+* CentOS 5/6
+* Scientific Linux 5/6
+
+* SmartOS (Joyent)
+
+* Archlinux
+
+Contributions to help support other Unix/Linux distributions are welcome!
+
+Automatic integration test result
+---------------------------------
+
+.. image:: https://api.travis-ci.org/ronnix/fabtools.png
+    :target: http://travis-ci.org/ronnix/fabtools

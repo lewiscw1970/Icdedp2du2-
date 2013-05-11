@@ -2,18 +2,13 @@ from __future__ import with_statement
 
 import time
 
-from fabric.api import *
-from fabtools import openvz
-from fabtools import require
-
-import fabtools
-
-from fabtools.openvz import guest
-from fabtools.require.openvz import container
+from fabric.api import cd, local, put, run, settings, sudo, task
 
 
 @task
 def test_openvz():
+
+    import fabtools
 
     # Skip test if the kernel does not support OpenVZ
     if not fabtools.files.is_dir('/proc/vz'):
@@ -27,6 +22,7 @@ def setup_networking():
     """
     Setup host networking
     """
+
     setup_nat()
     setup_firewall()
 
@@ -35,6 +31,9 @@ def setup_nat():
     """
     Make sure IP forwarding is enabled
     """
+
+    import fabtools
+
     fabtools.require.system.sysctl('net.ipv4.ip_forward', 1)
 
 
@@ -43,6 +42,8 @@ def setup_firewall():
     Shorewall config
     (based on http://www.shorewall.net/OpenVZ.html)
     """
+
+    from fabtools import require
 
     zones = [
         {
@@ -115,14 +116,22 @@ def setup_firewall():
         interfaces=interfaces,
         policy=policy,
         masq=masq,
-        )
+    )
 
     require.shorewall.started()
 
 
 def setup_containers():
 
-    require.deb.package('vzctl')
+    from fabtools import require
+    from fabtools.openvz import guest, list_ctids
+    from fabtools.require.openvz import container
+    from fabtools.require.redis import VERSION as REDIS_VERSION
+    from fabtools.system import distrib_family
+    import fabtools
+
+    if distrib_family() == 'debian':
+        require.deb.package('vzctl')
 
     NAME = 'debian'
     TEMPLATE = 'debian-6.0-x86_64'
@@ -157,7 +166,7 @@ def setup_containers():
             assert sudo('whoami', user='nobody') == 'nobody'
 
         # Check put
-        with guest(name):
+        with guest(NAME):
             local('echo "toto" > /tmp/toto')
             put('/tmp/toto', '/tmp/toto')
             assert run('test -f /tmp/toto').succeeded
@@ -194,13 +203,13 @@ def setup_containers():
             # Install Redis
             require.redis.instance('test')
             assert fabtools.files.is_file('/etc/redis/test.conf')
-            assert run('echo PING | /opt/redis-2.4.15/redis-cli') == 'PONG'
+            assert run('echo PING | /opt/redis-%s/redis-cli' % REDIS_VERSION) == 'PONG'
 
-    assert 'debian' in openvz.list_ctids()
+    assert 'debian' in list_ctids()
 
     # Stop and destroy container
     with container(NAME, TEMPLATE, hostname=NAME, ipadd=IPADD) as ct:
         ct.stop()
         ct.destroy()
 
-    assert 'debian' not in openvz.list_ctids()
+    assert 'debian' not in list_ctids()

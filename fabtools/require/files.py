@@ -9,12 +9,14 @@ directories.
 from __future__ import with_statement
 
 import hashlib
-import os, os.path
+import os
 from tempfile import mkstemp
 from urlparse import urlparse
 
-from fabric.api import *
+from fabric.api import hide, put, run, settings
+
 from fabtools.files import is_file, is_dir, md5sum
+from fabtools.utils import run_as_root
 import fabtools.files
 
 
@@ -35,7 +37,7 @@ def directory(path, use_sudo=False, owner='', group='', mode=''):
               ``fabtools.require`` module for convenience.
 
     """
-    func = use_sudo and sudo or run
+    func = use_sudo and run_as_root or run
 
     if not is_dir(path):
         func('mkdir -p "%(path)s"' % locals())
@@ -87,7 +89,7 @@ def file(path=None, contents=None, source=None, url=None, md5=None,
               ``fabtools.require`` module for convenience.
 
     """
-    func = use_sudo and sudo or run
+    func = use_sudo and run_as_root or run
 
     # 1) Only a path is given
     if path and not (contents or source or url):
@@ -101,7 +103,7 @@ def file(path=None, contents=None, source=None, url=None, md5=None,
             path = os.path.basename(urlparse(url).path)
 
         if not is_file(path) or md5 and md5sum(path) != md5:
-            func('wget --progress=dot %(url)s' % locals())
+            func('wget --progress=dot:mega %(url)s -O %(path)s' % locals())
 
     # 3) A local filename, or a content string, is specified
     else:
@@ -133,11 +135,7 @@ def file(path=None, contents=None, source=None, url=None, md5=None,
                 (verify_remote and
                     md5sum(path, use_sudo=use_sudo) != digest.hexdigest())):
             with settings(hide('running')):
-                if source:
-                    put(source, path, use_sudo=use_sudo)
-                else:
-                    put(tmp_file.name, path, use_sudo=use_sudo)
-                    os.remove(tmp_file.name)
+                put(source, path, use_sudo=use_sudo)
 
         if t is not None:
             os.unlink(source)

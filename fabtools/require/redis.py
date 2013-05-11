@@ -9,17 +9,22 @@ This module provides high-level tools for managing `Redis`_ instances.
 """
 from __future__ import with_statement
 
+from fabric.api import cd, run, settings
+
 from fabtools.files import is_file, watch
-from fabtools.deb import *
+from fabtools.system import distrib_family
+from fabtools.utils import run_as_root
+import fabtools.supervisor
 
 
-VERSION = '2.4.17'
+VERSION = '2.6.12'
 
 BINARIES = [
     'redis-benchmark',
     'redis-check-aof',
     'redis-check-dump',
     'redis-cli',
+    'redis-sentinel',
     'redis-server',
 ]
 
@@ -30,12 +35,30 @@ def installed_from_source(version=VERSION):
 
     The compiled binaries will be installed in ``/opt/redis-{version}/``.
     """
-    from fabtools import require
+    from fabtools.require import directory as require_directory
+    from fabtools.require import file as require_file
+    from fabtools.require import user as require_user
+    from fabtools.require.deb import packages as require_deb_packages
+    from fabtools.require.rpm import packages as require_rpm_packages
 
-    require.user('redis')
+    family = distrib_family()
+
+    if family == 'debian':
+        require_deb_packages([
+            'build-essential',
+        ])
+
+    elif family == 'redhat':
+        require_rpm_packages([
+            'gcc',
+            'make',
+        ])
+
+    require_user('redis', home='/var/lib/redis', system=True)
+    require_directory('/var/lib/redis', owner='redis', use_sudo=True)
 
     dest_dir = '/opt/redis-%(version)s' % locals()
-    require.directory(dest_dir, use_sudo=True, owner='redis')
+    require_directory(dest_dir, use_sudo=True, owner='redis')
 
     if not is_file('%(dest_dir)s/redis-server' % locals()):
 
@@ -43,17 +66,17 @@ def installed_from_source(version=VERSION):
 
             # Download and unpack the tarball
             tarball = 'redis-%(version)s.tar.gz' % locals()
-            require.file(tarball, url='http://redis.googlecode.com/files/' + tarball)
+            url = 'http://redis.googlecode.com/files/' + tarball
+            require_file(tarball, url=url)
             run('tar xzf %(tarball)s' % locals())
 
             # Compile and install binaries
-            require.deb.package('build-essential')
             with cd('redis-%(version)s' % locals()):
                 run('make')
 
                 for filename in BINARIES:
-                    sudo('cp -pf src/%(filename)s %(dest_dir)s/' % locals())
-                    sudo('chown redis: %(dest_dir)s/%(filename)s' % locals())
+                    run_as_root('cp -pf src/%(filename)s %(dest_dir)s/' % locals())
+                    run_as_root('chown redis: %(dest_dir)s/%(filename)s' % locals())
 
 
 def instance(name, version=VERSION, **kwargs):
@@ -81,18 +104,21 @@ def instance(name, version=VERSION, **kwargs):
 
 
     """
-    from fabtools import require
+    from fabtools.require import directory as require_directory
+    from fabtools.require import file as require_file
+    from fabtools.require.supervisor import process as require_process
+    from fabtools.require.system import sysctl as require_sysctl
 
     installed_from_source(version)
 
-    require.directory('/etc/redis', use_sudo=True, owner='redis')
-    require.directory('/var/db/redis', use_sudo=True, owner='redis')
-    require.directory('/var/log/redis', use_sudo=True, owner='redis')
-    require.directory('/var/run/redis', use_sudo=True, owner='redis')
+    require_directory('/etc/redis', use_sudo=True, owner='redis')
+    require_directory('/var/db/redis', use_sudo=True, owner='redis')
+    require_directory('/var/log/redis', use_sudo=True, owner='redis')
+    require_directory('/var/run/redis', use_sudo=True, owner='redis')
 
     # Required for background saving
     with settings(warn_only=True):
-        require.system.sysctl('vm.overcommit_memory', '1')
+        require_sysctl('vm.overcommit_memory', '1')
 
     # Set default parameters
     params = {}
@@ -119,15 +145,17 @@ def instance(name, version=VERSION, **kwargs):
 
     # Upload config file
     with watch(config_filename, use_sudo=True) as config:
-        require.file(config_filename, contents='\n'.join(lines),
-            use_sudo=True, owner='redis')
+        require_file(config_filename, contents='\n'.join(lines),
+                     use_sudo=True, owner='redis')
 
     # Use supervisord to manage process
     process_name = 'redis_%s' % name
-    require.supervisor.process(process_name,
+    require_process(
+        process_name,
         user='redis',
         directory='/var/run/redis',
-        command="%(redis_server)s %(config_filename)s" % locals())
+        command="%(redis_server)s %(config_filename)s" % locals(),
+    )
 
     # Restart if needed
     if config.changed:

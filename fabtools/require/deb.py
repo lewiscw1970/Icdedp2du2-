@@ -10,9 +10,15 @@ from __future__ import with_statement
 
 from fabric.utils import puts
 
+from fabtools.deb import (
+    install,
+    is_installed,
+    uninstall,
+    update_index,
+)
 from fabtools.files import is_file, watch
-from fabtools.deb import *
-import fabtools.require
+from fabtools.system import distrib_codename
+from fabtools.utils import run_as_root
 
 
 def source(name, uri, distribution, *components):
@@ -27,11 +33,14 @@ def source(name, uri, distribution, *components):
         require.deb.source('mongodb', 'http://downloads-distro.mongodb.org/repo/ubuntu-upstart', 'dist', '10gen')
 
     """
+
+    from fabtools.require import file as require_file
+
     path = '/etc/apt/sources.list.d/%(name)s.list' % locals()
     components = ' '.join(components)
     source_line = 'deb %(uri)s %(distribution)s %(components)s\n' % locals()
     with watch(path) as config:
-        fabtools.require.file(path=path, contents=source_line, use_sudo=True)
+        require_file(path=path, contents=source_line, use_sudo=True)
     if config.changed:
         puts('Added APT repository: %s' % source_line)
         update_index()
@@ -41,7 +50,7 @@ def ppa(name):
     """
     Require a `PPA`_ package source.
 
-    ::
+    Example::
 
         from fabtools import require
 
@@ -57,7 +66,7 @@ def ppa(name):
 
     if not is_file(source):
         package('python-software-properties')
-        sudo('add-apt-repository %s' % name)
+        run_as_root('add-apt-repository %s' % name, pty=False)
         update_index()
 
 
@@ -65,7 +74,7 @@ def package(pkg_name, update=False):
     """
     Require a deb package to be installed.
 
-    ::
+    Example::
 
         from fabtools import require
 
@@ -79,7 +88,7 @@ def packages(pkg_list, update=False):
     """
     Require several deb packages to be installed.
 
-    ::
+    Example::
 
         from fabtools import require
 
@@ -98,7 +107,7 @@ def nopackage(pkg_name):
     """
     Require a deb package to be uninstalled.
 
-    ::
+    Example::
 
         from fabtools import require
 
@@ -112,7 +121,7 @@ def nopackages(pkg_list):
     """
     Require several deb packages to be uninstalled.
 
-    ::
+    Example::
 
         from fabtools import require
 

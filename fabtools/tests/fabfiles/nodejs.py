@@ -6,9 +6,6 @@ except ImportError:
     import simplejson as json
 
 from fabric.api import *
-from fabtools import nodejs
-from fabtools import require
-from fabtools.files import is_file
 
 
 @task
@@ -16,6 +13,10 @@ def install_nodejs():
     """
     Test low level API
     """
+
+    from fabtools import nodejs
+    from fabtools import require
+    from fabtools.files import is_file
 
     # Install Node.js from source
     if nodejs.version() != nodejs.DEFAULT_VERSION:
@@ -33,7 +34,7 @@ def install_nodejs():
 
     nodejs.uninstall_package('underscore')
 
-    assert nodejs.package_version('underscore') == None
+    assert nodejs.package_version('underscore') is None
     assert not is_file('/usr/local/lib/node_modules/underscore/underscore.js')
 
     # Install / uninstall local package
@@ -45,7 +46,7 @@ def install_nodejs():
 
     nodejs.uninstall_package('underscore', local=True)
 
-    assert nodejs.package_version('underscore', local=True) == None
+    assert nodejs.package_version('underscore', local=True) is None
     assert not is_file('node_modules/underscore/underscore.js')
 
     # Install dependencies from package.json file
@@ -70,6 +71,10 @@ def require_nodejs():
     """
     Test high level API
     """
+
+    from fabtools import nodejs
+    from fabtools import require
+    from fabtools.files import is_file
 
     # Require Node.js
 

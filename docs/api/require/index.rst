@@ -6,14 +6,19 @@ fabtools.require
 
    deb
    files
+   git
+   groups
    mysql
    nginx
    nodejs
    openvz
+   oracle_jdk
+   pkg
    postfix
    postgres
    python
    redis
+   rpm
    service
    shorewall
    supervisor

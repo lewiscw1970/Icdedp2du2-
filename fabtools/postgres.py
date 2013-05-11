@@ -7,7 +7,7 @@ This module provides tools for creating PostgreSQL users and databases.
 """
 from __future__ import with_statement
 
-from fabric.api import *
+from fabric.api import cd, hide, settings, sudo
 
 
 def _run_as_pg(command):
@@ -27,7 +27,9 @@ def user_exists(name):
     return (res == "1")
 
 
-def create_user(name, password):
+def create_user(name, password, superuser=False, createdb=False,
+                createrole=False, inherit=True, login=True,
+                connection_limit=None, encrypted_password=False):
     """
     Create a PostgreSQL user.
 
@@ -39,19 +41,37 @@ def create_user(name, password):
         if not fabtools.postgres.user_exists('dbuser'):
             fabtools.postgres.create_user('dbuser', password='somerandomstring')
 
+        # Create DB user with custom options
+        fabtools.postgres.create_user('dbuser2', password='s3cr3t',
+            createdb=True, createrole=True, connection_limit=20)
+
     """
-    _run_as_pg('''psql -c "CREATE USER %(name)s WITH PASSWORD '%(password)s';"''' % locals())
+    options = [
+        'SUPERUSER' if superuser else 'NOSUPERUSER',
+        'CREATEDB' if createdb else 'NOCREATEDB',
+        'CREATEROLE' if createrole else 'NOCREATEROLE',
+        'INHERIT' if inherit else 'NOINHERIT',
+        'LOGIN' if login else 'NOLOGIN',
+    ]
+    if connection_limit is not None:
+        options.append('CONNECTION LIMIT %d' % connection_limit)
+    password_type = 'ENCRYPTED' if encrypted_password else 'UNENCRYPTED'
+    options.append("%s PASSWORD '%s'" % (password_type, password))
+    options = ' '.join(options)
+    _run_as_pg('''psql -c "CREATE USER %(name)s %(options)s;"''' % locals())
 
 
 def database_exists(name):
     """
     Check if a PostgreSQL database exists.
     """
-    with settings(hide('running', 'stdout', 'stderr', 'warnings'), warn_only=True):
+    with settings(hide('running', 'stdout', 'stderr', 'warnings'),
+                  warn_only=True):
         return _run_as_pg('''psql -d %(name)s -c ""''' % locals()).succeeded
 
 
-def create_database(name, owner, template='template0', encoding='UTF8', locale='en_US.UTF-8'):
+def create_database(name, owner, template='template0', encoding='UTF8',
+                    locale='en_US.UTF-8'):
     """
     Create a PostgreSQL database.
 
@@ -64,5 +84,16 @@ def create_database(name, owner, template='template0', encoding='UTF8', locale='
             fabtools.postgres.create_database('myapp', owner='dbuser')
 
     """
-    _run_as_pg('''createdb --owner %(owner)s --template %(template)s --encoding=%(encoding)s\
- --lc-ctype=%(locale)s --lc-collate=%(locale)s %(name)s''' % locals())
+    _run_as_pg('''createdb --owner %(owner)s --template %(template)s \
+                  --encoding=%(encoding)s --lc-ctype=%(locale)s \
+                  --lc-collate=%(locale)s %(name)s''' % locals())
+
+
+def create_schema(name, database, owner=None):
+    """
+    Create a schema within a database.
+    """
+    if owner:
+        _run_as_pg('''psql %(database)s -c "CREATE SCHEMA %(name)s AUTHORIZATION %(owner)s"''' % locals())
+    else:
+        _run_as_pg('''psql %(database)s -c "CREATE SCHEMA %(name)s"''' % locals())

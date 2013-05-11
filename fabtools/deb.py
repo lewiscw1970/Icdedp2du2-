@@ -8,18 +8,20 @@ and repositories.
 """
 from __future__ import with_statement
 
-from fabric.api import *
+from fabric.api import hide, run, settings
+
+from fabtools.utils import run_as_root
 
 
-MANAGER = 'apt-get'
+MANAGER = 'DEBIAN_FRONTEND=noninteractive apt-get'
 
 
 def update_index(quiet=True):
     """
     Update APT package definitions.
     """
-    options = "-q -q" if quiet else ""
-    sudo("%s %s update" % (MANAGER, options))
+    options = "--quiet --quiet" if quiet else ""
+    run_as_root("%s %s update" % (MANAGER, options))
 
 
 def upgrade(safe=True):
@@ -27,10 +29,11 @@ def upgrade(safe=True):
     Upgrade all packages.
     """
     manager = MANAGER
-    cmds = {'apt-get': {False: 'dist-upgrade', True: 'upgrade'},
-            'aptitude': {False: 'full-upgrade', True: 'safe-upgrade'}}
-    cmd = cmds[manager][safe]
-    sudo("%(manager)s --assume-yes %(cmd)s" % locals())
+    if safe:
+        cmd = 'upgrade'
+    else:
+        cmd = 'dist-upgrade'
+    run_as_root("%(manager)s --assume-yes %(cmd)s" % locals(), pty=False)
 
 
 def is_installed(pkg_name):
@@ -77,9 +80,11 @@ def install(packages, update=False, options=None):
         options = []
     if not isinstance(packages, basestring):
         packages = " ".join(packages)
+    options.append("--quiet")
     options.append("--assume-yes")
     options = " ".join(options)
-    sudo('%(manager)s install %(options)s %(packages)s' % locals())
+    cmd = '%(manager)s install %(options)s %(packages)s' % locals()
+    run_as_root(cmd, pty=False)
 
 
 def uninstall(packages, purge=False, options=None):
@@ -99,7 +104,8 @@ def uninstall(packages, purge=False, options=None):
         packages = " ".join(packages)
     options.append("--assume-yes")
     options = " ".join(options)
-    sudo('%(manager)s %(command)s %(options)s %(packages)s' % locals())
+    cmd = '%(manager)s %(command)s %(options)s %(packages)s' % locals()
+    run_as_root(cmd, pty=False)
 
 
 def preseed_package(pkg_name, preseed):
@@ -122,7 +128,7 @@ def preseed_package(pkg_name, preseed):
     """
     for q_name, _ in preseed.items():
         q_type, q_answer = _
-        sudo('echo "%(pkg_name)s %(q_name)s %(q_type)s %(q_answer)s" | debconf-set-selections' % locals())
+        run_as_root('echo "%(pkg_name)s %(q_name)s %(q_type)s %(q_answer)s" | debconf-set-selections' % locals())
 
 
 def get_selections():
@@ -132,28 +138,12 @@ def get_selections():
     Returns a dict with state => [packages].
     """
     with settings(hide('stdout')):
-        res = sudo('dpkg --get-selections')
+        res = run_as_root('dpkg --get-selections')
     selections = dict()
     for line in res.splitlines():
         package, status = line.split()
         selections.setdefault(status, list()).append(package)
     return selections
-
-
-def distrib_codename():
-    """
-    Get the codename of the distrib.
-
-    Example::
-
-        from fabtools.deb import distrib_codename
-
-        if distrib_codename() == 'precise':
-            print('Ubuntu 12.04 LTS')
-
-    """
-    with settings(hide('running', 'stdout')):
-        return run('lsb_release --codename --short')
 
 
 def add_apt_key(filename, update=True):
@@ -172,6 +162,6 @@ def add_apt_key(filename, update=True):
         fabtools.deb.add_apt_key('rabbitmq-signing-key-public.asc')
 
     """
-    sudo('apt-key add %(filename)s' % locals())
+    run_as_root('apt-key add %(filename)s' % locals())
     if update:
         update_index()

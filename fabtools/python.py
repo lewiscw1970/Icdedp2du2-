@@ -13,11 +13,13 @@ from __future__ import with_statement
 
 from contextlib import contextmanager
 from distutils.version import StrictVersion as V
-import os.path
+import os
 import posixpath
 
-from fabric.api import *
+from fabric.api import cd, hide, prefix, run, settings, sudo
 from fabric.utils import puts
+
+from fabtools.utils import run_as_root
 
 
 def is_pip_installed(version=None):
@@ -57,7 +59,7 @@ def install_pip():
     """
     with cd('/tmp'):
         run('curl --silent -O https://raw.github.com/pypa/pip/master/contrib/get-pip.py')
-        sudo('python get-pip.py')
+        run_as_root('python get-pip.py', pty=False)
 
 
 def is_installed(package):
@@ -72,7 +74,8 @@ def is_installed(package):
     return (package in packages)
 
 
-def install(packages, upgrade=False, use_mirrors=True, use_sudo=False, user=None, download_cache=None):
+def install(packages, upgrade=False, use_mirrors=True, use_sudo=False,
+            user=None, download_cache=None, quiet=False):
     """
     Install Python package(s) using `pip`_.
 
@@ -98,15 +101,19 @@ def install(packages, upgrade=False, use_mirrors=True, use_sudo=False, user=None
         options.append('--upgrade')
     if download_cache:
         options.append('--download-cache="%s"' % download_cache)
+    if quiet:
+        options.append('--quiet')
     options = ' '.join(options)
     command = 'pip install %(options)s %(packages)s' % locals()
     if use_sudo:
-        sudo(command, user=user)
+        sudo(command, user=user, pty=False)
     else:
-        run(command)
+        run(command, pty=False)
 
 
-def install_requirements(filename, upgrade=False, use_mirrors=True, use_sudo=False, user=None, download_cache=None):
+def install_requirements(filename, upgrade=False, use_mirrors=True,
+                         use_sudo=False, user=None, download_cache=None,
+                         quiet=False):
     """
     Install Python packages from a pip `requirements file`_.
 
@@ -125,12 +132,14 @@ def install_requirements(filename, upgrade=False, use_mirrors=True, use_sudo=Fal
         options.append('--upgrade')
     if download_cache:
         options.append('--download-cache="%s"' % download_cache)
+    if quiet:
+        options.append('--quiet')
     options = ' '.join(options)
     command = 'pip install %(options)s -r %(filename)s' % locals()
     if use_sudo:
-        sudo(command, user=user)
+        sudo(command, user=user, pty=False)
     else:
-        run(command)
+        run(command, pty=False)
 
 
 @contextmanager

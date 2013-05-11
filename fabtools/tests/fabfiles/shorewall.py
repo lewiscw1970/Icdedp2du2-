@@ -1,6 +1,4 @@
-from fabric.api import *
-from fabtools import require
-import fabtools
+from fabric.api import task
 
 
 @task
@@ -8,6 +6,10 @@ def firewall():
     """
     Setup a firewall
     """
+
+    from fabtools import require
+    import fabtools
+
     require.shorewall.firewall(
         rules=[
             fabtools.shorewall.Ping(),
@@ -15,8 +17,10 @@ def firewall():
             fabtools.shorewall.HTTP(),
             fabtools.shorewall.HTTPS(),
             fabtools.shorewall.SMTP(),
-            fabtools.shorewall.rule(port=1234,
-                source=fabtools.shorewall.hosts(['example.com'])),
+            fabtools.shorewall.rule(
+                port=1234,
+                source=fabtools.shorewall.hosts(['example.com']),
+            ),
         ]
     )
 
