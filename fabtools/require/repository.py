@@ -1,5 +1,5 @@
-from fabri.api import run
-from fabri.api.contrib import files
+from fabric.api import run
+from fabric.api.contrib import files
 from fabric.colors import red
 
 def extract_name(repo_uri, cvs='git'):
