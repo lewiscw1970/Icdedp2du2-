@@ -17,6 +17,7 @@ import fabtools.postgres
 import fabtools.python
 import fabtools.python_distribute
 import fabtools.rpm
+import fabtools.repository
 import fabtools.service
 import fabtools.shorewall
 import fabtools.ssh
