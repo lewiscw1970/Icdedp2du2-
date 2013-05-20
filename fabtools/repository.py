@@ -18,12 +18,12 @@ def reset(vcs='git'):
         run('git reset --hard')
 
 
-def update(vcs='git', origin='origin', branch='master'):
+def update(vcs='git', remote='origin', branch='master'):
     """
     Update code from remote repository
     """
     if vcs == 'git':
-        run('git pull %s %s' % (origin, branch))
+        run('git pull %s %s' % (remote, branch))
 
 
 def branch(name, vcs='git'):
