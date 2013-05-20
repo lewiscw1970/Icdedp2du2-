@@ -55,6 +55,7 @@ def install_from_oracle_site(version=DEFAULT_VERSION):
         run('rm -rf %s' % jdk_filename)
         run('wget --no-cookies --header="Cookie: gpw_e24=a" ' +
             '--progress=dot:mega ' +
+            '--no-check-certificate ' +
             '%(jdk_url)s -O /tmp/%(jdk_filename)s' % locals())
 
     require_directory('/opt', mode='777', use_sudo=True)
