@@ -57,9 +57,8 @@ def install_pip():
             fabtools.python.install_pip()
 
     """
-    with cd('/tmp'):
-        run('curl --silent -O https://raw.github.com/pypa/pip/master/contrib/get-pip.py')
-        run_as_root('python get-pip.py', pty=False)
+    run_as_root('curl --silent https://raw.github.com/pypa/pip/master/contrib/get-pip.py | python',
+                pty=False)
 
 
 def is_installed(package):
@@ -92,8 +91,11 @@ def install(packages, upgrade=False, use_mirrors=True, use_sudo=False,
         fabtools.python.install(['pkg1', 'pkg2'], use_sudo=True)
 
     """
-    if not isinstance(packages, basestring):
-        packages = ' '.join(packages)
+    if isinstance(packages, basestring):
+        packages = packages.split()
+
+    packages = ' '.join('"%s"' % package for package in packages)
+
     options = []
     if use_mirrors:
         options.append('--use-mirrors')
