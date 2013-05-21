@@ -1,4 +1,5 @@
 """
+=======
 Node.js
 =======
 
@@ -93,7 +94,7 @@ def version():
         return res[1:]
 
 
-def install_package(package, version=None, local=False):
+def install_package(package, version=None, local=False, is_root_path=True):
     """
     Install a Node.js package.
 
@@ -117,6 +118,7 @@ def install_package(package, version=None, local=False):
         run('/usr/local/bin/npm install -l %s' % package)
     else:
         run_as_root('HOME=/root /usr/local/bin/npm install -g %s' % package)
+
 
 
 def install_dependencies():
