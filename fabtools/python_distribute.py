@@ -22,9 +22,10 @@ def is_distribute_installed():
 
     .. _distribute: http://packages.python.org/distribute/
     """
-    cmd = '''python -c "import pkg_resources;\
+    python = get_python_location()
+    cmd = '''%s -c "import pkg_resources;\
                         print pkg_resources.get_distribution('distribute')"
-          '''
+          ''' % python
     res = run(cmd, quiet=True)
     return res.succeeded and (res.find('distribute') >= 0)
 
