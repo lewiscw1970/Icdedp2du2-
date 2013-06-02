@@ -13,6 +13,7 @@ from __future__ import with_statement
 from fabric.api import cd, run
 
 from fabtools.utils import run_as_root
+from fabtools.python import get_python_location
 
 
 def is_distribute_installed():
@@ -44,7 +45,8 @@ def install_distribute():
     """
     with cd("/tmp"):
         run("curl --silent -O http://python-distribute.org/distribute_setup.py")
-        run_as_root("python distribute_setup.py")
+        python = get_python_location()
+        run_as_root("%s distribute_setup.py" % python)
 
 
 def install(packages, upgrade=False, use_sudo=False):
