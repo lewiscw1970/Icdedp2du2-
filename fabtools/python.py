@@ -23,6 +23,18 @@ from fabric.utils import puts
 from fabtools.utils import abspath, run_as_root
 
 
+def get_python_location():
+    pythons = ['python', 'python2', 'python3']
+
+    with settings(hide('running', 'stdout', 'stderr', 'warnings'), warn_only=True):
+        for p in pythons:
+            output = run('which %s' % p, warn_only=True)
+            if output.return_code == 0:
+                return output
+
+        return None
+
+
 def is_pip_installed(version=None):
     """
     Check if `pip`_ is installed.
@@ -60,7 +72,8 @@ def install_pip():
     """
     with cd('/tmp'):
         run('curl --silent -O https://raw.github.com/pypa/pip/master/contrib/get-pip.py')
-        run_as_root('python get-pip.py', pty=False)
+        python = get_python_location()
+        run_as_root('%s get-pip.py' % python, pty=False)
 
 
 def is_installed(package):
