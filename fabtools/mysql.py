@@ -25,14 +25,20 @@ def _query(query, use_sudo=True, **kwargs):
     """
     func = use_sudo and run_as_root or run
 
-    user = kwargs.get('mysql_user') or env.get('mysql_user')
-    password = kwargs.get('mysql_password') or env.get('mysql_password')
-    if user and not password:
-        password = prompt_password(user)
+    no_auth = kwargs.get('mysql_no_auth') or env.get('mysql_no_auth')
+    auth_args = ''
+    if not no_auth:
+        user = kwargs.get('mysql_user') or env.get('mysql_user')
+        password = kwargs.get('mysql_password') or env.get('mysql_password')
+        if user and not password:
+            password = prompt_password(user)
+        auth_args = '--user=%(user)s --password=%(password)s' % {
+            'user': user,
+            'password': password
+        }
 
-    return func('mysql --batch --raw --skip-column-names --user=%(user)s --password=%(password)s --execute="%(query)s"' % {
-        'user': user,
-        'password': password,
+    return func('mysql --batch --raw --skip-column-names %(auth)s --execute="%(query)s"' % {
+        'auth': auth_args,
         'query': query
     })
 
