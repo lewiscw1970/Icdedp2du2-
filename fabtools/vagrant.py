@@ -64,7 +64,7 @@ def vagrant(name='',directory='.'):
         $ fab vagrant some_task
 
     """
-    config = ssh_config(name,directory=None)
+    config = ssh_config(name,directory)
 
     extra_args = _settings_dict(config)
     env.update(extra_args)
