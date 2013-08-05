@@ -7,12 +7,13 @@ from __future__ import with_statement
 from fabric.api import env, hide, local, settings, task
 
 
-def ssh_config(name=''):
+def ssh_config(name='',directory='.'):
     """
     Get the SSH parameters for connecting to a vagrant VM.
     """
     with settings(hide('running')):
-        output = local('vagrant ssh-config %s' % name, capture=True)
+        with lcd(directory):
+            output = local('vagrant ssh-config %s' % name, capture=True)
 
     config = {}
     for line in output.splitlines()[1:]:
@@ -45,7 +46,7 @@ def _settings_dict(config):
 
 
 @task
-def vagrant(name=''):
+def vagrant(name='',directory='.'):
     """
     Run the following tasks on a vagrant box.
 
@@ -63,7 +64,7 @@ def vagrant(name=''):
         $ fab vagrant some_task
 
     """
-    config = ssh_config(name)
+    config = ssh_config(name,directory=None)
 
     extra_args = _settings_dict(config)
     env.update(extra_args)
