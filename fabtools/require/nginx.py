@@ -26,9 +26,10 @@ from fabtools.service import reload as reload_service
 from fabtools.utils import run_as_root
 
 
-def server():
+def server(package='nginx'):
     """
     Require nginx server to be installed and running.
+    Allows override of package name to allow install of nginx-extras instead
 
     ::
 
@@ -36,7 +37,7 @@ def server():
 
         require.nginx.server()
     """
-    package('nginx')
+    package(package)
     require_started('nginx')
 
 
