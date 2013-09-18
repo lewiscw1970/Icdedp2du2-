@@ -16,6 +16,7 @@ from fabric.api import (
     settings,
 )
 from fabric.colors import red
+from fabtools.deb import is_installed
 
 from fabtools.files import is_link
 from fabtools.nginx import disable, enable
@@ -88,7 +89,8 @@ def site(server_name, template_contents=None, template_source=None,
 
     .. seealso:: :py:func:`fabtools.require.files.template_file`
     """
-    server()
+    if not is_installed('nginx-common'):  # nginx-common is always installed if Nginx exists
+        server()
 
     config_filename = '/etc/nginx/sites-available/%s.conf' % server_name
 
