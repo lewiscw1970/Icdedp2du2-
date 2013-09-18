@@ -21,6 +21,19 @@ def ssh_config(name=''):
     return config
 
 
+def list_vms():
+    """
+    Count how many vagrant VMs are running and list hostnames
+    """
+    with settings(hide('running')):
+        output = local('vagrant status | grep running', capture=True)
+
+    vms = []
+    for line in output.splitlines():
+        vms.append(line.strip().split(' ', 2)[0])
+    return vms
+
+
 def _settings_dict(config):
     settings = {}
 
@@ -45,7 +58,7 @@ def _settings_dict(config):
 
 
 @task
-def vagrant(name=''):
+def vagrant(*names):
     """
     Run the following tasks on a vagrant box.
 
@@ -58,15 +71,28 @@ def vagrant(name=''):
         def some_task():
             run('echo hello')
 
-    Then you can easily run tasks on your current Vagrant box::
+    Then you can easily run tasks on your current/all Vagrant box::
 
         $ fab vagrant some_task
 
-    """
-    config = ssh_config(name)
+    Or on specific Vagrant boxes::
 
-    extra_args = _settings_dict(config)
-    env.update(extra_args)
+        $ fab vagrant:machine1,machine2 some_task
+
+    """
+    vms = list_vms()
+    # Run on all if no specifics given
+    if len(names) == 0:
+        names = vms
+    hosts = [x for x in names if x in vms]
+    for vm in hosts:
+        config = ssh_config(vm)
+        extra = _settings_dict(config)
+        # This works as the only uniqueness is the host string
+        save_hosts = env.hosts
+        save_hosts.append(extra["host_string"])
+        extra["hosts"] = save_hosts
+        env.update(extra)
 
 
 def vagrant_settings(name='', *args, **kwargs):
