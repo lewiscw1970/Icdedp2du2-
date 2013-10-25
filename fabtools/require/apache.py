@@ -68,6 +68,7 @@ def enabled_mod(name):
     """
     package('libapache2-mod-' + name)
     run_as_root('a2enmod %s' % name)
+    reload_service('apache2')
 
 
 def disabled_mod(name, remove=False):
@@ -84,6 +85,7 @@ def disabled_mod(name, remove=False):
     run_as_root('a2dismod %s' % name)
     if(remove):
         nopackage('libapache2-mod-' + name)
+    reload_service('apache2')
 
 
 def site(config_name, template_contents=None, template_source=None, enabled=True, check_config=True, **kwargs):
