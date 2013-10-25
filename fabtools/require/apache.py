@@ -23,7 +23,7 @@ from fabtools.service import reload as reload_service
 from fabtools.utils import run_as_root
 
 
-def server():
+def server(mode="prefork"):
     """
     Require apache2 server to be installed and running.
 
@@ -33,7 +33,13 @@ def server():
 
         require.apache.server()
     """
-    package('apache2')
+    if(mode == "prefork"):
+        package('apache2-mpm-prefork')
+    elif(mode == "worker"):
+        package('apache2-mpm-worker')
+    else:
+        abort(red('Error, mode apache "' + mode + '" not allowed'))
+
     require_started('apache2')
 
 
