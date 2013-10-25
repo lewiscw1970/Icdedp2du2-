@@ -16,7 +16,7 @@ from fabric.api import (
 from fabric.colors import red
 
 from fabtools.apache import disable, enable, _get_config_name
-from fabtools.require.deb import package
+from fabtools.require.deb import package, nopackage
 from fabtools.require.files import template_file
 from fabtools.require.service import started as require_started
 from fabtools.service import reload as reload_service
@@ -59,6 +59,37 @@ def disabled(config):
     """
     disable(config)
     reload_service('apache2')
+
+
+def enabled_mod(name):
+    """
+    Add and enable an Apache2 module.
+
+    ::
+
+        from fabtools import require
+
+        require.apache.enabled_mod('fastcgi')
+
+    """
+    package('libapache2-mod-' + name)
+    run_as_root('a2enmod %s' % name)
+
+
+def disabled_mod(name, remove=False):
+    """
+    Disable and remove (if remove=True) an Apache2 module.
+
+    ::
+
+        from fabtools import require
+
+        require.apache.disabled_mod('fastcgi', True)
+
+    """
+    run_as_root('a2dismod %s' % name)
+    if(remove):
+        nopackage('libapache2-mod-' + name)
 
 
 def site(config_name, template_contents=None, template_source=None, enabled=True, check_config=True, **kwargs):
