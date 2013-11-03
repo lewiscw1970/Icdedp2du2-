@@ -93,7 +93,7 @@ def mode(path, use_sudo=False):
 
 
 def upload_template(filename, template, context=None, use_sudo=False,
-                    user="root", mkdir=False, chown=False):
+                    user="root", mkdir=False, chown=False, use_jinja=False):
     """
     Upload a template file.
     """
@@ -104,7 +104,7 @@ def upload_template(filename, template, context=None, use_sudo=False,
         else:
             run('mkdir -p "%s"' % d)
     _upload_template(os.path.join("templates", template), filename,
-                     context=context, use_sudo=use_sudo)
+                     context=context, use_sudo=use_sudo, use_jinja=use_jinja)
     if chown:
         run_as_root('chown %s:%s "%s"' % (user, user, filename))
 
