@@ -16,14 +16,14 @@ from fabric.api import (
 from fabric.colors import red
 
 from fabtools.apache import disable, enable, _get_config_name
-from fabtools.require.deb import package
+from fabtools.require.deb import package, nopackage
 from fabtools.require.files import template_file
 from fabtools.require.service import started as require_started
 from fabtools.service import reload as reload_service
 from fabtools.utils import run_as_root
 
 
-def server():
+def server(mode="prefork"):
     """
     Require apache2 server to be installed and running.
 
@@ -33,7 +33,13 @@ def server():
 
         require.apache.server()
     """
-    package('apache2')
+    if(mode == "prefork"):
+        package('apache2-mpm-prefork')
+    elif(mode == "worker"):
+        package('apache2-mpm-worker')
+    else:
+        abort(red('Error, mode apache "' + mode + '" not allowed'))
+
     require_started('apache2')
 
 
@@ -53,6 +59,37 @@ def disabled(config):
     """
     disable(config)
     reload_service('apache2')
+
+
+def enabled_mod(name):
+    """
+    Add and enable an Apache2 module.
+
+    ::
+
+        from fabtools import require
+
+        require.apache.enabled_mod('fastcgi')
+
+    """
+    package('libapache2-mod-' + name)
+    run_as_root('a2enmod %s' % name)
+
+
+def disabled_mod(name, remove=False):
+    """
+    Disable and remove (if remove=True) an Apache2 module.
+
+    ::
+
+        from fabtools import require
+
+        require.apache.disabled_mod('fastcgi', True)
+
+    """
+    run_as_root('a2dismod %s' % name)
+    if(remove):
+        nopackage('libapache2-mod-' + name)
 
 
 def site(config_name, template_contents=None, template_source=None, enabled=True, check_config=True, **kwargs):
