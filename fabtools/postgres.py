@@ -100,20 +100,26 @@ def create_schema(name, database, owner=None, port='5432'):
         _run_as_pg('''psql -p %(port)s %(database)s -c "CREATE SCHEMA %(name)s"''' % locals())
         
 
-def dump_database(database, path='/var/backups/postgres', port='5432'):
+def dump_database(database, path='/var/backups/postgres', filename='', port='5432'):
     """
     Generate a dump database to a remote destination path
     Example::
 
         import fabtools
 
-        fabtools.postgres.dump_database('myapp', path='/var/backups/postgres')
+        fabtools.postgres.dump_database('myapp', path='/var/backups/postgres', filename='myapp-backup.sql')
+        # If not filename specified will be saved with the date file format: database-201312010000.sql
+        fabtools.postgres.dump_database('myapp', path='/var/backups/postgres') 
+        # If not path specified will be saved at '/var/backups/postgres'
+        fabtools.postgres.dump_database('myapp')
 
     """
     if exists(path):
         if database_exists(database):
                 date = _date.today().strftime("%Y%m%d%H%M")
-                _run_as_pg('''pg_dump -p %(port)s %(database)s --format=custom --blobs --file="%(path)s/%(database)s-%(date)s.sql"''' % locals())
+                if not filename:
+                    filename = '%(database)s-%(date)s.sql' % locals()
+                _run_as_pg('''pg_dump -p %(port)s %(database)s --format=custom --blobs --file="%(path)s/%(filename)s"''' % locals())
         else:
             abort('''Don\'t exists the database: %(database)s''' % locals() )
     else:
