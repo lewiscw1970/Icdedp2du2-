@@ -149,7 +149,7 @@ def restore_database(database, sqlfile='', port=''):
 
         import fabtools
 
-        fabtools.postgres.restore_database('myapp', path='/var/backups/postgres/myapp-backup.sql')
+        fabtools.postgres.restore_database('myapp', sqlfile='/var/backups/postgres/myapp-backup.sql')
     """
     port_option = _port_option(port)
     if exists(sqlfile):
