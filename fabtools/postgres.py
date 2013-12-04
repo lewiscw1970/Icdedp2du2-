@@ -137,9 +137,9 @@ def dump_database(database, path='/var/backups/postgres', filename='', format='p
                     filename = '%(database)s-%(date)s.sql' % locals()
                 _run_as_pg('''pg_dump %(port_option)s %(database)s --format=%(format)s --blobs --file="%(path)s/%(filename)s"''' % locals())
         else:
-            abort('''Don\'t exists the database: %(database)s''' % locals())
+            abort('''Database does not exist: %(database)s''' % locals())
     else:
-        abort('''Don\'t exists the destination path: %(path)s''' % locals())
+        abort('''Destination path does not exist: %(path)s''' % locals())
 
 
 def restore_database(database, sqlfile='', port=''):
@@ -156,6 +156,6 @@ def restore_database(database, sqlfile='', port=''):
         if database_exists(database):
             _run_as_pg('''psql %(port_option)s %(database)s < %(sqlfile)s''' % locals())
         else:
-            abort('''Don\'t exists the database: %(database)s''' % locals())
+            abort('''Database does not exist: %(database)s''' % locals())
     else:
-        abort('''Don\'t exists the sql file: %(sqlfile)s''' % locals())
+        abort('''Sql file does not exist: %(sqlfile)s''' % locals())
