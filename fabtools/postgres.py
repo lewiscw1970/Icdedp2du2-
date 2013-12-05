@@ -159,3 +159,19 @@ def restore_database(database, sqlfile='', port=''):
             abort('''Database does not exist: %(database)s''' % locals())
     else:
         abort('''Sql file does not exist: %(sqlfile)s''' % locals())
+        
+def drop_database(name, port=''):
+    """
+    Drop a PostgreSQL database.
+
+    Example::
+
+        import fabtools
+
+        # Drop DB if exist
+        if fabtools.postgres.database_exists('myapp'):
+            fabtools.postgres.drop_database('myapp')
+
+    """
+    port_option = _port_option(port)
+    _run_as_pg('''psql %(port_option)s-c "DROP DATABASE %(name)s;"''' % locals())
