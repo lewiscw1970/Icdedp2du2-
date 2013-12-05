@@ -23,7 +23,7 @@ def _port_option(port):
     Return the option port if port passed
     """
     if port:
-        return "-p %(port)s" % locals()
+        return "-p %(port)s " % locals()
     else: 
         return ""
     
@@ -33,7 +33,7 @@ def user_exists(name, port=''):
     """
     port_option = _port_option(port)
     with settings(hide('running', 'stdout', 'stderr', 'warnings'), warn_only=True):
-        res = _run_as_pg('''psql %(port_option)s -t -A -c "SELECT COUNT(*) FROM pg_user WHERE usename = '%(name)s';"''' % locals())
+        res = _run_as_pg('''psql %(port_option)s-t -A -c "SELECT COUNT(*) FROM pg_user WHERE usename = '%(name)s';"''' % locals())
     return (res == "1")
 
 
@@ -69,7 +69,7 @@ def create_user(name, password, superuser=False, createdb=False,
     password_type = 'ENCRYPTED' if encrypted_password else 'UNENCRYPTED'
     options.append("%s PASSWORD '%s'" % (password_type, password))
     options = ' '.join(options)
-    _run_as_pg('''psql %(port_option)s -c "CREATE USER %(name)s %(options)s;"''' % locals())
+    _run_as_pg('''psql %(port_option)s-c "CREATE USER %(name)s %(options)s;"''' % locals())
 
 
 def database_exists(name, port=''):
@@ -79,7 +79,7 @@ def database_exists(name, port=''):
     port_option = _port_option(port)
     with settings(hide('running', 'stdout', 'stderr', 'warnings'),
                   warn_only=True):
-        return _run_as_pg('''psql %(port_option)s -d %(name)s -c ""''' % locals()).succeeded
+        return _run_as_pg('''psql %(port_option)s-d %(name)s -c ""''' % locals()).succeeded
 
 
 def create_database(name, owner, template='template0', encoding='UTF8',
@@ -97,7 +97,7 @@ def create_database(name, owner, template='template0', encoding='UTF8',
 
     """
     port_option = _port_option(port)
-    _run_as_pg('''createdb %(port_option)s --owner %(owner)s --template %(template)s \
+    _run_as_pg('''createdb %(port_option)s--owner %(owner)s --template %(template)s \
                   --encoding=%(encoding)s --lc-ctype=%(locale)s \
                   --lc-collate=%(locale)s %(name)s''' % locals())
 
@@ -108,9 +108,9 @@ def create_schema(name, database, owner=None, port=''):
     """
     port_option = _port_option(port)
     if owner:
-        _run_as_pg('''psql %(port_option)s %(database)s -c "CREATE SCHEMA %(name)s AUTHORIZATION %(owner)s"''' % locals())
+        _run_as_pg('''psql %(port_option)s%(database)s -c "CREATE SCHEMA %(name)s AUTHORIZATION %(owner)s"''' % locals())
     else:
-        _run_as_pg('''psql %(port_option)s %(database)s -c "CREATE SCHEMA %(name)s"''' % locals())
+        _run_as_pg('''psql %(port_option)s%(database)s -c "CREATE SCHEMA %(name)s"''' % locals())
         
 
 def dump_database(database, path='/var/backups/postgres', filename='', format='plain', port=''):
@@ -135,7 +135,7 @@ def dump_database(database, path='/var/backups/postgres', filename='', format='p
                 date = _date.today().strftime("%Y%m%d%H%M")
                 if not filename:
                     filename = '%(database)s-%(date)s.sql' % locals()
-                _run_as_pg('''pg_dump %(port_option)s %(database)s --format=%(format)s --blobs --file="%(path)s/%(filename)s"''' % locals())
+                _run_as_pg('''pg_dump %(port_option)s%(database)s --format=%(format)s --blobs --file="%(path)s/%(filename)s"''' % locals())
         else:
             abort('''Database does not exist: %(database)s''' % locals())
     else:
@@ -154,7 +154,7 @@ def restore_database(database, sqlfile='', port=''):
     port_option = _port_option(port)
     if exists(sqlfile):
         if database_exists(database):
-            _run_as_pg('''psql %(port_option)s %(database)s < %(sqlfile)s''' % locals())
+            _run_as_pg('''psql %(port_option)s%(database)s < %(sqlfile)s''' % locals())
         else:
             abort('''Database does not exist: %(database)s''' % locals())
     else:
