@@ -42,6 +42,8 @@ def distrib_id():
                     return "Fedora"
                 elif is_file('/etc/arch-release'):
                     return "Archlinux"
+                elif is_file('/etc/openwrt_release'):
+                    return "OpenWrt"
                 elif is_file('/etc/redhat-release'):
                     release = run('cat /etc/redhat-release')
                     if release.startswith('Red Hat Enterprise Linux'):
@@ -74,7 +76,11 @@ def distrib_release():
         kernel = run('uname -s')
 
         if kernel == 'Linux':
-            return run('lsb_release -r --short')
+            distrib = distrib_id()
+            if distrib in ['Debian', 'Ubuntu']:
+                return run('lsb_release -r --short')
+            elif distrib in ["OpenWrt"]:
+                return run('cat /etc/openwrt_release | grep DISTRIB_RELEASE | cut -d= -f2').replace('"', '')
 
         elif kernel == 'SunOS':
             return run('uname -v')
@@ -93,7 +99,11 @@ def distrib_codename():
 
     """
     with settings(hide('running', 'stdout')):
-        return run('lsb_release --codename --short')
+        distrib = distrib_id()
+        if distrib in ['Debian', 'Ubuntu']:
+            return run('lsb_release --codename --short')
+        elif distrib in ["OpenWrt"]:
+            return run('cat /etc/openwrt_release | grep DISTRIB_CODENAME | cut -d= -f2').replace('"', '')
 
 
 def distrib_desc():
@@ -103,9 +113,11 @@ def distrib_desc():
     For example: ``Debian GNU/Linux 6.0.7 (squeeze)``.
     """
     with settings(hide('running', 'stdout')):
-        if not is_file('/etc/redhat-release'):
-            return run('lsb_release --desc --short')
-        return run('cat /etc/redhat-release')
+        if is_file('/etc/redhat-release'):
+            return run('cat /etc/redhat-release')
+        elif is_file('/etc/openwrt_release'):
+            return run('cat /etc/openwrt_release | grep DISTRIB_DESCRIPTION | cut -d= -f2').replace('"', '')
+        return run('lsb_release --desc --short')
 
 
 def distrib_family():
@@ -132,7 +144,10 @@ def get_hostname():
     Get the fully qualified hostname.
     """
     with settings(hide('running', 'stdout')):
-        return run('hostname --fqdn')
+        if distrib_id() == "OpenWrt":
+            return run('uci show system.@system[0].hostname | cut -d= -f2')
+        else:
+            return run('hostname --fqdn')
 
 
 def set_hostname(hostname, persist=True):
@@ -141,7 +156,10 @@ def set_hostname(hostname, persist=True):
     """
     run_as_root('hostname %s' % hostname)
     if persist:
-        run_as_root('echo %s >/etc/hostname' % hostname)
+        if distrib_id() == "OpenWrt":
+            run_as_root('uci set system.@system[0].hostname=%s && uci commit' % hostname)
+        else:
+            run_as_root('echo %s >/etc/hostname' % hostname)
 
 
 def get_sysctl(key):
