@@ -4,6 +4,8 @@ Vagrant helpers
 """
 from __future__ import with_statement
 
+from functools import wraps
+
 from fabric.api import env, hide, local, settings, task
 
 
@@ -88,3 +90,52 @@ def vagrant_settings(name='', *args, **kwargs):
     kwargs.update(extra_args)
 
     return settings(*args, **kwargs)
+
+
+def vagrant_task(name='', *args, **kwargs):
+    """Decorator that configures a Fabric ``@task`` to be run on a vagrant VM
+    as the host. This is a convenience decorator that bundles the
+    :py:func:`fabtools.vagrant.vagrant_settings` context manager into
+    a task.
+
+    Use this decorator as a replacement for ``@task`` to run commands on
+    your current Vagrant box::
+
+        from fabric.api import *
+        from fabtools.vagrant import vagrant_task
+
+        @vagrant_task
+        def some_task():
+            run('echo hello')
+
+    Then you can easily create tasks that can be run on vagrant
+    machines by running::
+
+        fab some_task
+
+    .. note::
+
+        At the moment, this is not intended to be an all-encompassing
+        solution to allow `arguments
+        <http://docs.fabfile.org/en/latest/usage/tasks.html#arguments>`_
+        for the ``@task`` decorator or for more sophisticated
+        fabric tasks that have arguments and keyword arguments. The
+        goal is to simplify the common pattern::
+
+            from fabric.api import *
+            from fabtools.vagrant import vagrant_settings
+
+            @task
+            def some_task():
+                with vagrant_settings():
+                    run('echo hello')
+
+    """
+    def wrapped_vagrant_task(task_function):
+        @task
+        @wraps(task_function)
+        def decorated_task_function():
+            with vagrant_settings(name, *args, **kwargs):
+                task_function()
+        return decorated_task_function
+    return wrapped_vagrant_task
