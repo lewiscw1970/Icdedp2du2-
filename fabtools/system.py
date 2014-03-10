@@ -10,12 +10,38 @@ from fabtools.files import is_file
 from fabtools.utils import run_as_root
 
 
+class UnsupportedFamily(Exception):
+    """
+    Operation not supported on this system family.
+
+    ::
+
+        from fabtools.system import UnsupportedFamily, distrib_family
+
+        family = distrib_family()
+        if family == 'debian':
+            do_some_stuff()
+        elif family == 'redhat':
+            do_other_stuff()
+        else:
+            raise UnsupportedFamily(supported=['debian', 'redhat'])
+
+    """
+
+    def __init__(self, supported):
+        self.supported = supported
+        self.distrib = distrib_id()
+        msg = "Unsupported system %s (supported families: %s)" % (self.distrib, ', '.join(supported))
+        super(UnsupportedFamily, self).__init__(msg)
+
+
 def distrib_id():
     """
     Get the OS distribution ID.
 
-    Returns one of ``"Debian"``, ``"Ubuntu"``, ``"RHEL"``, ``"CentOS"``,
-    ``"Fedora"``, ``"Archlinux"``, ``"SunOS"``...
+    Returns a string such as ``"Debian"``, ``"Ubuntu"``, ``"RHEL"``,
+    ``"CentOS"``, ``"SLES"``, ``"Fedora"``, ``"Archlinux"``, ``"Gentoo"``,
+    ``"SunOS"``...
 
     Example::
 
@@ -31,7 +57,8 @@ def distrib_id():
 
         if kernel == 'Linux':
             # lsb_release works on Ubuntu and Debian >= 6.0
-            # but is not always included in other distros
+            # but is not always included in other distros such as:
+            # Gentoo
             if is_file('/usr/bin/lsb_release'):
                 return run('lsb_release --id --short')
             else:
@@ -49,6 +76,8 @@ def distrib_id():
                         return "CentOS"
                     elif release.startswith('Scientific Linux'):
                         return "SLES"
+                elif is_file('/etc/gentoo-release'):
+                    return "Gentoo"
         elif kernel == "SunOS":
             return "SunOS"
 
@@ -109,15 +138,20 @@ def distrib_family():
     """
     Get the distribution family.
 
-    Returns one of ``debian``, ``redhat``, ``sun``, ``other``.
+    Returns one of ``debian``, ``redhat``, ``arch``, ``gentoo``,
+    ``sun``, ``other``.
     """
     distrib = distrib_id()
-    if distrib in ['Debian', 'Ubuntu']:
+    if distrib in ['Debian', 'Ubuntu', 'LinuxMint']:
         return 'debian'
-    elif distrib in ['RHEL', 'CentOS', 'Fedora']:
+    elif distrib in ['RHEL', 'CentOS', 'SLES', 'Fedora']:
         return 'redhat'
     elif distrib in ['SunOS']:
         return 'sun'
+    elif distrib in ['Gentoo']:
+        return 'gentoo'
+    elif distrib in ['Archlinux']:
+        return 'arch'
     else:
         return 'other'
 

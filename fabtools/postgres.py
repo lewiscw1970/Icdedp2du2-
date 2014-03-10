@@ -11,7 +11,8 @@ from datetime import datetime as _date
 
 from pipes import quote
 import posixpath
-from fabric.api import abort, cd, hide, run, settings
+import fabtools
+from fabric.api import abort, cd, hide, settings, sudo
 
 
 def _run_as_pg(command):
@@ -19,7 +20,7 @@ def _run_as_pg(command):
     Run command as 'postgres' user
     """
     with cd('~postgres'):
-        return run('sudo -u postgres %s' % command)
+        return sudo(command, user='postgres')
 
 
 def _port_option(port):
@@ -36,10 +37,20 @@ def user_exists(name, port=None):
     """
     Check if a PostgreSQL user exists.
     """
+    command_options = [
+        '-t',
+        '-A'
+    ]
     port_option = _port_option(port)
+
+    if port_option is not None:
+        command_options.append(port_option)
+
+    command_options = ' '.join(command_options)
+
     with settings(hide('running', 'stdout', 'stderr', 'warnings'), warn_only=True):
-        res = _run_as_pg('''psql %(port_option)s-t -A -c "SELECT COUNT(*) FROM pg_user WHERE usename = '%(name)s';"''' % locals())
-    return res == "1"
+        res = _run_as_pg('''psql %(command_options)s -c "SELECT COUNT(*) FROM pg_user WHERE usename = '%(name)s';"''' % locals())
+    return (res == "1")
 
 
 def create_user(name, password, superuser=False, createdb=False,
@@ -68,23 +79,68 @@ def create_user(name, password, superuser=False, createdb=False,
         'INHERIT' if inherit else 'NOINHERIT',
         'LOGIN' if login else 'NOLOGIN',
     ]
-    port_option = _port_option(port)
     if connection_limit is not None:
         options.append('CONNECTION LIMIT %d' % connection_limit)
     password_type = 'ENCRYPTED' if encrypted_password else 'UNENCRYPTED'
     options.append("%s PASSWORD '%s'" % (password_type, password))
     options = ' '.join(options)
-    _run_as_pg('''psql %(port_option)s-c "CREATE USER %(name)s %(options)s;"''' % locals())
+
+    command_options = [
+        '-c'
+    ]
+    port_option = _port_option(port)
+
+    if port_option is not None:
+        command_options.append(port_option)
+
+    command_options = ' '.join(command_options)
+
+    _run_as_pg('''psql %(command_options)s "CREATE USER %(name)s %(options)s;"''' % locals())
+
+
+def drop_user(name, port=None):
+    """
+    Drop a PostgreSQL user.
+
+    Example::
+
+        import fabtools
+
+        # Remove DB user if it exists
+        if fabtools.postgres.user_exists('dbuser'):
+            fabtools.postgres.drop_user('dbuser')
+
+    """
+    command_options = [
+        '-c'
+    ]
+    port_option = _port_option(port)
+
+    if port_option is not None:
+        command_options.append(port_option)
+
+    command_options = ' '.join(command_options)
+
+    _run_as_pg('''psql %(command_options)s "DROP USER %(name)s;"''' % locals())
 
 
 def database_exists(name, port=None):
     """
     Check if a PostgreSQL database exists.
     """
+    command_options = [
+        '-d',
+    ]
     port_option = _port_option(port)
+
+    if port_option is not None:
+        command_options.append(port_option)
+
+    command_options = ' '.join(command_options)
+
     with settings(hide('running', 'stdout', 'stderr', 'warnings'),
                   warn_only=True):
-        return _run_as_pg('''psql %(port_option)s-d %(name)s -c ""''' % locals()).succeeded
+        return _run_as_pg('''psql %(command_options)s %(name)s -c ""''' % locals()).succeeded
 
 
 def create_database(name, owner, template='template0', encoding='UTF8',
@@ -101,22 +157,56 @@ def create_database(name, owner, template='template0', encoding='UTF8',
             fabtools.postgres.create_database('myapp', owner='dbuser')
 
     """
+    command_options = []
     port_option = _port_option(port)
-    _run_as_pg('''createdb %(port_option)s--owner %(owner)s --template %(template)s \
+
+    if port_option is not None:
+        command_options.append(port_option)
+    command_options = ' '.join(command_options)
+
+    _run_as_pg('''createdb %(command_options)s --owner %(owner)s --template %(template)s \
                   --encoding=%(encoding)s --lc-ctype=%(locale)s \
                   --lc-collate=%(locale)s %(name)s''' % locals())
+
+
+def drop_database(name, port=None):
+    """
+    Delete a PostgreSQL database.
+
+    Example::
+
+        import fabtools
+
+        # Remove DB if it exists
+        if fabtools.postgres.database_exists('myapp'):
+            fabtools.postgres.drop_database('myapp')
+
+    """
+    command_options = []
+    port_option = _port_option(port)
+
+    if port_option is not None:
+        command_options.append(port_option)
+    command_options = ' '.join(command_options)
+
+    _run_as_pg('''dropdb %(command_options)s %(name)s''' % locals())
 
 
 def create_schema(name, database, owner=None, port=None):
     """
     Create a schema within a database.
     """
+    command_options = []
     port_option = _port_option(port)
 
+    if port_option is not None:
+        command_options.append(port_option)
+    command_options = ' '.join(command_options)
+
     if owner:
-        _run_as_pg('''psql %(port_option)s%(database)s -c "CREATE SCHEMA %(name)s AUTHORIZATION %(owner)s"''' % locals())
+        _run_as_pg('''psql %(command_options)s %(database)s -c "CREATE SCHEMA %(name)s AUTHORIZATION %(owner)s"''' % locals())
     else:
-        _run_as_pg('''psql %(port_option)s%(database)s -c "CREATE SCHEMA %(name)s"''' % locals())
+        _run_as_pg('''psql %(command_options)s %(database)s -c "CREATE SCHEMA %(name)s"''' % locals())
         
 
 def dump_database(database, path='/var/backups/postgres', filename='', format='plain', port=None):
@@ -135,14 +225,21 @@ def dump_database(database, path='/var/backups/postgres', filename='', format='p
         fabtools.postgres.dump_database('myapp', format='custom')
 
     """
+    command_options = []
     port_option = _port_option(port)
+
+    if port_option is not None:
+        command_options.append(port_option)
+
+    command_options = ' '.join(command_options)
+
     if fabtools.files.is_dir(path):
         if database_exists(database):
                 date = _date.today().strftime("%Y%m%d%H%M")
                 if not filename:
                     filename = '%(database)s-%(date)s.sql' % locals()
                 dest = quote(posixpath.join(path, filename))
-                _run_as_pg('pg_dump %(port_option)s%(database)s --format=%(format)s --blobs --file=%(dest)s' % locals())
+                _run_as_pg('pg_dump %(command_options)s %(database)s --format=%(format)s --blobs --file=%(dest)s' % locals())
         else:
             abort('''Database does not exist: %(database)s''' % locals())
     else:
@@ -158,10 +255,16 @@ def restore_database(database, sqlfile='', port=None):
 
         fabtools.postgres.restore_database('myapp', sqlfile='/var/backups/postgres/myapp-backup.sql')
     """
+    command_options = []
     port_option = _port_option(port)
-    if fabtools.files.is_dir(sqlfile):
+
+    if port_option is not None:
+        command_options.append(port_option)
+    command_options = ' '.join(command_options)
+
+    if fabtools.files.is_file(sqlfile):
         if database_exists(database):
-            _run_as_pg('''psql %(port_option)s%(database)s < %(sqlfile)s''' % locals())
+            _run_as_pg('''psql %(command_options)s %(database)s < %(sqlfile)s''' % locals())
         else:
             abort('''Database does not exist: %(database)s''' % locals())
     else:
@@ -181,5 +284,11 @@ def drop_database(name, port=None):
             fabtools.postgres.drop_database('myapp')
 
     """
+    command_options = []
     port_option = _port_option(port)
-    _run_as_pg('''psql %(port_option)s-c "DROP DATABASE %(name)s;"''' % locals())
+
+    if port_option is not None:
+        command_options.append(port_option)
+    command_options = ' '.join(command_options)
+
+    _run_as_pg('''dropdb %(command_options)s%(name)s''' % locals())

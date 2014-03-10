@@ -1,6 +1,6 @@
 """
 opkg packages
-===============
+=============
 
 This module provides tools to manage opkg packages
 and repositories.
@@ -95,4 +95,3 @@ def uninstall(packages, options=None):
     options = " ".join(options)
     cmd = '%(manager)s %(command)s %(options)s %(packages)s' % locals()
     run_as_root(cmd, pty=False)
-
