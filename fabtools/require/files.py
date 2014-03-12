@@ -213,10 +213,10 @@ def template_file(path=None, template_contents=None, template_source=None, conte
 
 def temporary_directory():
     """
-    Require a file whose contents is defined by a template.
+    Create a temporary directory using unix command mktemp. The temporary directory will be created in /tmp
     """
     with hide('running', 'stdout'):
-        path = run('mktemp --directory')
+        path = run('mktemp --directory /tmp/temp.XXXXXX')
     return TemporaryDirectory(path)
 
 
