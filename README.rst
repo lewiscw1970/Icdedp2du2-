@@ -92,5 +92,6 @@ Supported targets
 * SmartOS (Joyent)
 
 * Archlinux
+* Openwrt
 
 Contributions to help support other Unix/Linux distributions are welcome!
