@@ -150,7 +150,7 @@ def distrib_family():
         return 'sun'
     elif distrib in ['Gentoo']:
         return 'gentoo'
-    elif distrib in ['Archlinux']:
+    elif distrib in ['Archlinux', 'Arch']:
         return 'arch'
     else:
         return 'other'
