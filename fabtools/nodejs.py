@@ -156,12 +156,16 @@ def package_version(package, local=False, npm='npm'):
     with hide('running', 'stdout'):
         res = run('%(npm)s list %(options)s' % locals())
 
-    dependencies = json.loads(res)['dependencies']
+    list = json.loads(res)
+    if not list:
+        return None
+
+    dependencies = list['dependencies']
     pkg_data = dependencies.get(package)
     if pkg_data:
         return pkg_data['version']
-    else:
-        return None
+
+    return None
 
 
 def update_package(package, local=False, npm='npm'):
