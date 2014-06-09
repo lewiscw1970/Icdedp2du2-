@@ -4,14 +4,17 @@ PostgreSQL users and databases
 """
 from __future__ import with_statement
 
-from fabric.api import cd, hide, run, settings
-from fabtools.files import is_file
+from fabric.api import cd, hide, run, settings, roles, sudo
+from fabtools.postgres import _run_as_pg
+from fabtools.files import is_file, is_dir
+from fabtools.system import distrib_family
 from fabtools.postgres import (
     create_database,
     create_user,
     database_exists,
     user_exists,
 )
+from fabtools.require import arch
 from fabtools.require.deb import package
 from fabtools.require.service import started, restarted
 from fabtools.require.system import locale as require_locale
@@ -19,15 +22,19 @@ from fabtools.require.system import locale as require_locale
 
 def _service_name(version=None):
 
-    if is_file('/etc/init.d/postgresql'):
-        return 'postgresql'
+    if distrib_family() == "arch":
+        if is_file('/usr/bin/postgres'):
+            return 'postgresql'
+    else:
+        if is_file('/etc/init.d/postgresql'):
+            return 'postgresql'
 
-    if version and is_file('/etc/init.d/postgresql-%s' % version):
-        return 'postgresql-%s' % version
+        if version and is_file('/etc/init.d/postgresql-%s' % version):
+            return 'postgresql-%s' % version
 
-    with cd('/etc/init.d'):
-        with settings(hide('running', 'stdout')):
-            return run('ls postgresql-*').splitlines()[0]
+        with cd('/etc/init.d'):
+            with settings(hide('running', 'stdout')):
+                return run('ls postgresql-*').splitlines()[0]
 
 
 def server(version=None):
@@ -41,11 +48,16 @@ def server(version=None):
         require.postgres.server()
 
     """
-    if version:
-        pkg_name = 'postgresql-%s' % version
-    else:
+    if distrib_family() == "arch":
         pkg_name = 'postgresql'
-    package(pkg_name)
+        arch.package(pkg_name)
+        init_postgres()
+    else:
+        if version:
+            pkg_name = 'postgresql-%s' % version
+        else:
+            pkg_name = 'postgresql'
+        package(pkg_name)
 
     started(_service_name(version))
 
@@ -94,3 +106,16 @@ def database(name, owner, template='template0', encoding='UTF8',
 
         create_database(name, owner, template=template, encoding=encoding,
                         locale=locale)
+
+
+
+def init_postgres(encoding='UTF8', locale='en_US.UTF-8'):
+    """
+    Arch postgresql daemon needs to be initiated once with its own user.
+
+    """
+    require_locale(locale)
+    cmd = "initdb --locale {0} -E {1} -D '/var/lib/postgres/data/'".format(
+        locale, encoding
+    )
+    _run_as_pg(cmd)
