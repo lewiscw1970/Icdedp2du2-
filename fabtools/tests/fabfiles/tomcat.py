@@ -7,7 +7,7 @@ import os
 
 from fabric.api import task
 
-from fabtools import require, tomcat
+from fabtools import tomcat
 from fabtools.files import is_file
 
 
@@ -16,6 +16,7 @@ def should_verify_tomcat_7_version(path="/usr/share/tomcat"):
     """
     Test high level API
     """
+    from fabtools import require
 
     require.oracle_jdk.installed()
     require.tomcat.installed()
@@ -29,6 +30,7 @@ def should_verify_tomcat_6_version(path="/usr/share/tomcat"):
     """
     Test high level API
     """
+    from fabtools import require
     tomcat6 = '6.0.36'
 
     require.oracle_jdk.installed()

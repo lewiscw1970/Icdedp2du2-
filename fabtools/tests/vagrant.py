@@ -1,5 +1,4 @@
 from __future__ import with_statement
-
 import os
 
 try:
@@ -109,7 +108,7 @@ class VagrantTestSuite(unittest.BaseTestSuite):
                 local('vagrant init %s' % box_name)
 
                 # Clean up
-                if status() != 'not created':
+                if status('') != 'not created':
                     halt_and_destroy()
 
             if provider:
