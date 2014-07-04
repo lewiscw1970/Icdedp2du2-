@@ -178,6 +178,8 @@ def _box_list_machine_readable():
         elif type_ == 'box-provider':
             box_provider = data
             res.append((box_name, box_provider))
+        elif type_ == 'box-version':
+            pass
         else:
             raise ValueError('Unknown item type')
     return res
