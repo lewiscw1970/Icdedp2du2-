@@ -116,7 +116,7 @@ def ppa(name, auto_accept=True, keyserver=None):
         update_index()
 
 
-def file(packages):
+def file(packages, force=False):
     """
     Require a deb file to be installed.
 
@@ -138,8 +138,11 @@ def file(packages):
 
     for package in pkglist:
         pkgname = package.split('/')[1].split('_')[0]
+        if force:
+            install_file(package)
         if not is_installed(pkgname):
             install_file(package)
+            
 
 
 def package(pkg_name, update=False, version=None):
