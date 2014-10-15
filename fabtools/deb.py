@@ -7,14 +7,13 @@ and repositories.
 
 """
 
-from fabric.api import hide, run, settings
+from fabric.api import hide, run, settings, put
 
 from fabtools.utils import run_as_root
 from fabtools.files import getmtime, is_file
 
 
 MANAGER = 'DEBIAN_FRONTEND=noninteractive apt-get'
-
 
 def update_index(quiet=True):
     """
@@ -48,6 +47,40 @@ def is_installed(pkg_name):
                 if "installed" in status.split(' '):
                     return True
         return False
+
+
+def install_file(packages):
+    """
+    Install one or more packages from deb files.
+
+    1. Upload package.deb from packages/package.deb to remote /tmp/package.deb
+    2. Install file
+    3. Remove /tmp/package.deb
+
+    Example::
+        import fatools
+
+        fabtools.deb.install_deb('package.deb')
+        
+    """
+    from os.path import exists, basename
+
+    manager = 'dpkg -i --skip-same-version'
+
+    pkglist = []
+
+    if isinstance(packages, basestring):
+        pkglist.append(packages)
+    else:
+        pkglist = packages
+
+    for package in pkglist:
+        if exists(package):
+            filename = basename(package)
+            put(package, '/tmp/%(filename)s' % locals())
+            cmd = '%(manager)s /tmp/%(filename)s' % locals()
+            run_as_root(cmd, pty=False)
+            run('rm -f /tmp/%(filename)s' % locals())
 
 
 def install(packages, update=False, options=None, version=None):
@@ -237,3 +270,5 @@ def last_update_time():
     if not is_file(STAMP):
         return -1
     return getmtime(STAMP)
+
+# vim: set expandtab:
