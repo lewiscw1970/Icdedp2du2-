@@ -13,6 +13,7 @@ from fabtools.deb import (
     add_apt_key,
     apt_key_exists,
     install,
+    install_file,
     is_installed,
     uninstall,
     update_index,
@@ -113,6 +114,32 @@ def ppa(name, auto_accept=True, keyserver=None):
         package('python-software-properties')
         run_as_root('add-apt-repository %(auto_accept)s %(keyserver)s %(name)s' % locals(), pty=False)
         update_index()
+
+
+def file(packages):
+    """
+    Require a deb file to be installed.
+
+    Example::
+        from fabtools import require
+
+        require.deb.file('packages/name_version.deb')
+        require.deb.file(['packages/package_1.deb', 'packages/package_2.deb'])
+
+        Important '_' symbol in filename! (Check installed with 'name')
+
+    """
+    pkglist = []
+
+    if isinstance(packages, basestring):
+        pkglist.append(packages)
+    else:
+        pkglist = packages
+
+    for package in pkglist:
+        pkgname = package.split('/')[1].split('_')[0]
+        if not is_installed(pkgname):
+            install_file(package)
 
 
 def package(pkg_name, update=False, version=None):
@@ -245,3 +272,5 @@ APT::Update::Post-Invoke-Success {"touch /var/lib/apt/periodic/fabtools-update-s
 
     if system.time() - last_update_time() > _to_seconds(max_age):
         update_index(quiet=quiet)
+
+# vim: set expandtab:
