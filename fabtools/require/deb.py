@@ -13,7 +13,9 @@ from fabtools.deb import (
     add_apt_key,
     apt_key_exists,
     install,
+    install_file,
     is_installed,
+    is_version,
     uninstall,
     update_index,
     last_update_time,
@@ -134,6 +136,53 @@ def package(pkg_name, update=False, version=None):
         install(pkg_name, update=update, version=version)
 
 
+def package_file(pkg_name, filename=None, version=None, directory='files', verbose=None):
+    """
+    Require a deb file to be uploaded and installed on remote pc.
+    1) Check if package is not installed
+    2) Check if installed package *starts with* version
+    3) Upload *directory/filename* to remote host
+    4) Install */tmp/filename* on remote host
+    
+    Example::
+        
+        from fabtools import require
+        
+        # Set up version info
+        pkg_name = 'tzdata'
+        pkg_filename = 'tzdata_2014i-0ubuntu0.14.04_all.deb'
+        pkg_version = '2014i'
+
+        # Require package with name 'tzdata' and version '2014i' is installed
+        require.deb.package_file(pkg_name=pkg_name, filename=pkg_filename, version=pkg_version)
+    
+    """
+    from fabtools.require.files import file as _require_file
+    from fabtools.deb import install_file
+    from os.path import exists
+
+    do_install = False
+
+    if not is_installed(pkg_name):
+        do_install = True
+    elif is_installed(pkg_name):
+        if version and not is_version(pkg_name, version):
+            do_install = True
+
+    if do_install:
+        if exists('%(directory)s/%(filename)s' % locals()):
+            _require_file(path='/tmp/%(filename)s' % locals(), source='%(directory)s/%(filename)s' % locals())
+            install_file('/tmp/%(filename)s' % locals())
+        else:
+            puts('%(directory)s/%(filename)s does not exists' % locals())
+
+    if verbose:
+        if do_install:
+            puts('Installing: %(pkg_name)s %(version)s %(filename)s' % locals())
+        else:
+            puts('Already installed: %(pkg_name)s %(version)s %(filename)s' % locals())
+        
+
 def packages(pkg_list, update=False):
     """
     Require several deb packages to be installed.
@@ -245,3 +294,5 @@ APT::Update::Post-Invoke-Success {"touch /var/lib/apt/periodic/fabtools-update-s
 
     if system.time() - last_update_time() > _to_seconds(max_age):
         update_index(quiet=quiet)
+
+# vim: set expandtab:

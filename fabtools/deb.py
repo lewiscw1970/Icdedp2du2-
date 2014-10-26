@@ -7,14 +7,13 @@ and repositories.
 
 """
 
-from fabric.api import hide, run, settings
+from fabric.api import hide, run, settings, put
 
 from fabtools.utils import run_as_root
 from fabtools.files import getmtime, is_file
 
 
 MANAGER = 'DEBIAN_FRONTEND=noninteractive apt-get'
-
 
 def update_index(quiet=True):
     """
@@ -48,6 +47,39 @@ def is_installed(pkg_name):
                 if "installed" in status.split(' '):
                     return True
         return False
+
+
+def is_version(pkg_name, version):
+    """
+    Check if a package have version
+    """
+    with settings(hide('running', 'stdout', 'stderr', 'warnings'), warn_only=True):
+        res = run("dpkg -s %(pkg_name)s" % locals())
+        for line in res.splitlines():
+            if line.startswith("Version: "):
+                pkg_ver = line[9:]
+                if pkg_ver.startswith(version):
+                    return True
+        return False
+
+
+def install_file(path):
+    """
+    Install one or more packages from deb files with ``dpkg -i`` on remote pc.
+
+    Example::
+
+        import fatools
+        
+        # Run ``sudo dpkg -i --skip-same-version /tmp/package.deb``
+        fabtools.deb.install_deb('/tmp/package.deb')
+        
+    """
+    manager = 'dpkg -i --skip-same-version'
+
+    cmd = '%(manager)s %(path)s' % locals()
+    with settings(hide('running', 'stdout')):
+        run_as_root(cmd, pty=False)
 
 
 def install(packages, update=False, options=None, version=None):
@@ -237,3 +269,5 @@ def last_update_time():
     if not is_file(STAMP):
         return -1
     return getmtime(STAMP)
+
+# vim: set expandtab:

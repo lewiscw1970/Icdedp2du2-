@@ -6,7 +6,7 @@ Utilities
 import os
 import posixpath
 
-from fabric.api import env, hide, run, sudo
+from fabric.api import env, hide, run, sudo, settings
 
 
 def run_as_root(command, *args, **kwargs):
@@ -49,3 +49,11 @@ def download(url, retry=10):
     from fabtools.require.curl import command as require_curl
     require_curl()
     run('curl --silent --retry %s -O %s' % (retry, url))
+
+
+def kill_proc(name, use_sudo=False):
+    func = use_sudo and run_as_root or run
+    with settings(hide('running', 'stdout', 'warnings'), warn_only=True):
+        func('killall %(name)s' % locals())
+
+# vim: set expandtab:
