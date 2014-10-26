@@ -49,38 +49,37 @@ def is_installed(pkg_name):
         return False
 
 
-def install_file(packages):
+def is_version(pkg_name, version):
     """
-    Install one or more packages from deb files.
+    Check if a package have version
+    """
+    with settings(hide('running', 'stdout', 'stderr', 'warnings'), warn_only=True):
+        res = run("dpkg -s %(pkg_name)s" % locals())
+        for line in res.splitlines():
+            if line.startswith("Version: "):
+                pkg_ver = line[9:]
+                if pkg_ver.startswith(version):
+                    return True
+        return False
 
-    1. Upload package.deb from packages/package.deb to remote /tmp/package.deb
-    2. Install file
-    3. Remove /tmp/package.deb
+
+def install_file(path):
+    """
+    Install one or more packages from deb files with ``dpkg -i`` on remote pc.
 
     Example::
-        import fatools
 
-        fabtools.deb.install_deb('package.deb')
+        import fatools
+        
+        # Run ``sudo dpkg -i --skip-same-version /tmp/package.deb``
+        fabtools.deb.install_deb('/tmp/package.deb')
         
     """
-    from os.path import exists, basename
-
     manager = 'dpkg -i --skip-same-version'
 
-    pkglist = []
-
-    if isinstance(packages, basestring):
-        pkglist.append(packages)
-    else:
-        pkglist = packages
-
-    for package in pkglist:
-        if exists(package):
-            filename = basename(package)
-            put(package, '/tmp/%(filename)s' % locals())
-            cmd = '%(manager)s /tmp/%(filename)s' % locals()
-            run_as_root(cmd, pty=False)
-            run('rm -f /tmp/%(filename)s' % locals())
+    cmd = '%(manager)s %(path)s' % locals()
+    with settings(hide('running', 'stdout')):
+        run_as_root(cmd, pty=False)
 
 
 def install(packages, update=False, options=None, version=None):
