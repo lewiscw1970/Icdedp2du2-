@@ -8,6 +8,11 @@ and repositories.
 """
 
 from fabric.utils import puts
+from fabric.contrib.files import (
+    contains,
+    comment,
+    uncomment,
+)
 
 from fabtools.deb import (
     add_apt_key,
@@ -77,6 +82,24 @@ def source(name, uri, distribution, *components):
         update_index()
 
 
+def source_list(component):
+    """
+    Require a component in /etc/apt/sources.list uncommented
+    """
+    regex = '^#\s{0,1}deb\s.*%(component)s.*$' % locals()
+    if contains('/etc/apt/sources.list', text=regex, escape=False):
+        uncomment('/etc/apt/sources.list', regex=regex, use_sudo=True, char='# ')
+
+
+def nosource_list(component):
+    """
+    Require a componentin /etc/apt/sources.list commented
+    """
+    regex = '^deb\s.*%(component)s.*$' % locals()
+    if contains('/etc/apt/sources.list', text=regex, escape=False):
+        comment('/etc/apt/sources.list', regex=regex, use_sudo=True, char='# ')
+
+
 def ppa(name, auto_accept=True, keyserver=None):
     """
     Require a `PPA`_ package source.
@@ -136,7 +159,7 @@ def package(pkg_name, update=False, version=None):
         install(pkg_name, update=update, version=version)
 
 
-def package_file(pkg_name, filename=None, version=None, directory='files', verbose=None):
+def package_file(pkg_name, filename=None, version=None, directory='packages', verbose=None):
     """
     Require a deb file to be uploaded and installed on remote pc.
     1) Check if package is not installed
@@ -173,8 +196,10 @@ def package_file(pkg_name, filename=None, version=None, directory='files', verbo
         if exists('%(directory)s/%(filename)s' % locals()):
             _require_file(path='/tmp/%(filename)s' % locals(), source='%(directory)s/%(filename)s' % locals())
             install_file('/tmp/%(filename)s' % locals())
+            return True
         else:
             puts('%(directory)s/%(filename)s does not exists' % locals())
+            return False
 
     if verbose:
         if do_install:
