@@ -196,6 +196,15 @@ def file(path=None, contents=None, source=None, url=None, md5=None,
         func('chmod %(mode)s "%(path)s"' % locals())
 
 
+def nofile(path=None, use_sudo=False):
+    """
+    Require a file to does not exist
+    """
+    func = use_sudo and run_as_root or run
+    
+    if is_file(path):
+        func('rm %(path)s' % locals)
+
 def files(path=None, source=None, md5=None,
          use_sudo=False, owner=None, group='', mode=None, verify_remote=True,
          temp_dir='/tmp'):

@@ -340,7 +340,14 @@ def get_all(exclude=None, uid_start='1000', uid_end='1100'):
             return False
 
 
-def add_files(path=None, source=None, exclude=None, mode=None):
+def add_file(path=None, source=None, exclude=None, mode=None):
+	"""
+	Add file to all users /home directory, change owner and group.
+
+	*exclude* must be a list of username for exclude.
+
+	Call require.directory and require.files
+	"""
 
     from fabtools.require.files import (
         files as _require_files,
@@ -352,3 +359,21 @@ def add_files(path=None, source=None, exclude=None, mode=None):
         _require_directory(path.format(user), owner='{}'.format(user), group='{}'.format(user), use_sudo=True)
         _require_files(path.format(user), source=source, owner='{}'.format(user), group='{}'.format(user), use_sudo=True, mode=mode)
 
+
+def add_directory(path=None, exclude=None):
+    
+	"""
+	Add directory to all users /home directory, change owner and group.
+
+	*exclude* must be a list of username for exclude.
+
+	Call require.directory
+	"""
+
+    from fabtools.require.files import (
+        directory as _require_directory,
+    )
+
+    users = get_all(exclude=exclude)
+    for user in users:
+        _require_directory(path.format(user), owner='{}'.format(user), group='{}'.format(user), use_sudo=True)
