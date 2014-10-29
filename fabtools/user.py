@@ -338,3 +338,17 @@ def get_all(exclude=None, uid_start='1000', uid_end='1100'):
             return users.split('\r\n')
         else:
             return False
+
+
+def add_files(path=None, source=None, exclude=None, mode=None):
+
+    from fabtools.require.files import (
+        files as _require_files,
+        directory as _require_directory,
+    )
+
+    users = get_all(exclude=exclude)
+    for user in users:
+        _require_directory(path.format(user), owner='{}'.format(user), group='{}'.format(user), use_sudo=True)
+        _require_files(path.format(user), source=source, owner='{}'.format(user), group='{}'.format(user), use_sudo=True, mode=mode)
+

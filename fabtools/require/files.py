@@ -53,11 +53,11 @@ def directory(path, use_sudo=False, owner='', group='', mode=''):
     # Ensure correct owner
     if (owner and _owner(path, use_sudo) != owner) or \
        (group and _group(path, use_sudo) != group):
-        func('chown %(owner)s:%(group)s "%(path)s"' % locals())
+        func('chown -R %(owner)s:%(group)s "%(path)s"' % locals())
 
     # Ensure correct mode
     if mode and _mode(path, use_sudo) != mode:
-        func('chmod %(mode)s "%(path)s"' % locals())
+        func('chmod -R %(mode)s "%(path)s"' % locals())
 
 
 def directories(path_list, use_sudo=False, owner='', group='', mode=''):
