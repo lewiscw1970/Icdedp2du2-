@@ -196,6 +196,31 @@ def file(path=None, contents=None, source=None, url=None, md5=None,
         func('chmod %(mode)s "%(path)s"' % locals())
 
 
+def files(path=None, source=None, md5=None,
+         use_sudo=False, owner=None, group='', mode=None, verify_remote=True,
+         temp_dir='/tmp'):
+    """
+    Require a files to exist and have specific contents and properties.
+
+    Source **must be** a directory (ends with '/').
+
+    Call require.files.file for each file in directory.
+    Show require.files.file parameters.
+
+    Example::
+
+        require.files.files(path='/home/user/.fonts/', source='files/home/user/.fonts/')
+
+    """
+
+    if source and source.endswith('/'):
+        elements = os.listdir(source)
+        for element in elements:
+            new_source = '{0}{1}'.format(source, element)
+            new_path = '{0}{1}'.format(path, element)
+            file(path=new_path, source=new_source, md5=md5, use_sudo=use_sudo, owner=owner, group=group, mode=mode, verify_remote=verify_remote, temp_dir=temp_dir)
+
+
 def template_file(path=None, template_contents=None, template_source=None, context=None, **kwargs):
     """
     Require a file whose contents is defined by a template.
