@@ -300,3 +300,41 @@ def add_host_keys(name, hostname):
         if host_key not in known_hosts:
             sudo('echo %s >>%s' % (quote(host_key),
                                    quote(known_hosts_filename)))
+
+
+def get_all(exclude=None, uid_start='1000', uid_end='1100'):
+    """
+    Get all users from /etc/passwd with uid >= uid_start and uid <= 1100
+    
+    *exclude* must be a list of username for exclude: exclude=['testuser']
+
+    Example::
+    
+        import fabtools
+
+        fabtools.user.get_all(exclude=[
+            'testuser',
+            'testuser2',
+        ])
+    
+    """
+
+    args = []
+
+    if exclude:
+        for user in exclude:
+            args.append('&& $1 !~ /%(user)s/' % locals())
+
+    if len(args) != 0:
+        args = ' '.join(args)
+    else:
+        args = ''
+
+    cmd = "awk 'BEGIN {FS=\":\"} {if ($3 >= %(uid_start)s && $3 <= %(uid_end)s %(args)s) print $1}' /etc/passwd" % locals()
+
+    with settings(hide('running', 'output')):
+        users = run(cmd)
+        if users:
+            return users.split('\r\n')
+        else:
+            return False
