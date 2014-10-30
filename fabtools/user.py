@@ -340,7 +340,7 @@ def get_all(exclude=None, uid_start='1000', uid_end='1100'):
             return False
 
 
-def add_file(path=None, source=None, exclude=None, mode=None):
+def add_files(path=None, source=None, exclude=None, mode=None):
     """
     Add file to all users /home directory, change owner and group.
     
