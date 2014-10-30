@@ -23,7 +23,7 @@ from fabtools.files import (
     mode as _mode,
     owner as _owner,
     umask,
-	remove,
+    remove,
 )
 from fabtools.utils import run_as_root
 import fabtools.files
