@@ -65,13 +65,13 @@ def is_version(pkg_name, version):
 
 def install_file(path):
     """
-    Install one or more packages from deb files with ``dpkg -i`` on remote pc.
+    Install program from deb package with *dpkg -i* on remote pc.
 
     Example::
 
         import fatools
         
-        # Run ``sudo dpkg -i --skip-same-version /tmp/package.deb``
+        # Run *sudo dpkg -i --skip-same-version /tmp/package.deb*
         fabtools.deb.install_deb('/tmp/package.deb')
         
     """
@@ -269,5 +269,3 @@ def last_update_time():
     if not is_file(STAMP):
         return -1
     return getmtime(STAMP)
-
-# vim: set expandtab:

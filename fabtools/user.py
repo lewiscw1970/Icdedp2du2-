@@ -304,17 +304,17 @@ def add_host_keys(name, hostname):
 
 def get_all(exclude=None, uid_start='1000', uid_end='1100'):
     """
-    Get all users from /etc/passwd with uid >= uid_start and uid <= 1100
+    Get all users from */etc/passwd* with uid >= *uid_start* and uid <= *uid_end*
     
-    *exclude* must be a list of username for exclude: exclude=['testuser']
+    *exclude* must be a list of username for exclude: exclude=['testuser', 'sysadm']
 
     Example::
     
         import fabtools
 
-        fabtools.user.get_all(exclude=[
+        print fabtools.user.get_all(exclude=[
             'testuser',
-            'testuser2',
+            'sysadm',
         ])
     
     """
@@ -341,13 +341,13 @@ def get_all(exclude=None, uid_start='1000', uid_end='1100'):
 
 
 def add_file(path=None, source=None, exclude=None, mode=None):
-	"""
-	Add file to all users /home directory, change owner and group.
-
-	*exclude* must be a list of username for exclude.
-
-	Call require.directory and require.files
-	"""
+    """
+    Add file to all users /home directory, change owner and group.
+    
+    *exclude* must be a list of username for exclude.
+    
+    This is a wrapper around py:func:`fabtools.require.files.directory` and py:func:`fabtools.require.files.files`
+    """
 
     from fabtools.require.files import (
         files as _require_files,
@@ -360,15 +360,14 @@ def add_file(path=None, source=None, exclude=None, mode=None):
         _require_files(path.format(user), source=source, owner='{}'.format(user), group='{}'.format(user), use_sudo=True, mode=mode)
 
 
-def add_directory(path=None, exclude=None):
+def add_directory(path=None, exclude=None): 
+    """
+    Add directory to all users /home directory, change owner and group.
     
-	"""
-	Add directory to all users /home directory, change owner and group.
-
-	*exclude* must be a list of username for exclude.
-
-	Call require.directory
-	"""
+    *exclude* must be a list of username for exclude.
+    
+    This is a wrapper around py:func:`fabtools.require.files.directory`
+    """
 
     from fabtools.require.files import (
         directory as _require_directory,

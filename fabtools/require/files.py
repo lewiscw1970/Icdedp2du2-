@@ -198,7 +198,14 @@ def file(path=None, contents=None, source=None, url=None, md5=None,
 
 def nofile(path=None, use_sudo=False):
     """
-    Require a file to does not exist
+    Require a file to does not exists.
+
+    Example::
+
+        from fabtools import require
+        
+        require.files.nofile('/path/to/file')
+        
     """
     func = use_sudo and run_as_root or run
     
@@ -211,17 +218,17 @@ def files(path=None, source=None, md5=None,
     """
     Require a files to exist and have specific contents and properties.
 
-    Source **must be** a directory (ends with '/').
+    Source *must be* a directory *(ends with '/')*.
 
-    Call require.files.file for each file in directory.
-    Show require.files.file parameters.
+    This is a wrapper arount py:func:`fabtools.require.files.file`.
 
     Example::
+
+        from fabtools import require
 
         require.files.files(path='/home/user/.fonts/', source='files/home/user/.fonts/')
 
     """
-
     if source and source.endswith('/'):
         elements = os.listdir(source)
         for element in elements:

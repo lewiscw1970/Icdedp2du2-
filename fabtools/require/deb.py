@@ -84,7 +84,14 @@ def source(name, uri, distribution, *components):
 
 def source_list(component):
     """
-    Require a component in /etc/apt/sources.list uncommented
+    Require a component in /etc/apt/sources.list uncommented.
+
+    Example::
+        
+        from fabtools import require
+
+        require.deb.source_list('partner')
+
     """
     regex = '^#\s{0,1}deb\s.*%(component)s.*$' % locals()
     if contains('/etc/apt/sources.list', text=regex, escape=False):
@@ -93,7 +100,7 @@ def source_list(component):
 
 def nosource_list(component):
     """
-    Require a componentin /etc/apt/sources.list commented
+    Require a component in /etc/apt/sources.list commented. See :py:func:`fabtools.require.deb.source_list`
     """
     regex = '^deb\s.*%(component)s.*$' % locals()
     if contains('/etc/apt/sources.list', text=regex, escape=False):
@@ -319,5 +326,3 @@ APT::Update::Post-Invoke-Success {"touch /var/lib/apt/periodic/fabtools-update-s
 
     if system.time() - last_update_time() > _to_seconds(max_age):
         update_index(quiet=quiet)
-
-# vim: set expandtab:

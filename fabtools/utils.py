@@ -52,8 +52,9 @@ def download(url, retry=10):
 
 
 def kill_proc(name, use_sudo=False):
+    """
+    Run `killall name`
+    """
     func = use_sudo and run_as_root or run
     with settings(hide('running', 'stdout', 'warnings'), warn_only=True):
         func('killall %(name)s' % locals())
-
-# vim: set expandtab:
