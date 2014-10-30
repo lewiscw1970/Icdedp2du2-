@@ -23,6 +23,7 @@ from fabtools.files import (
     mode as _mode,
     owner as _owner,
     umask,
+	remove,
 )
 from fabtools.utils import run_as_root
 import fabtools.files
@@ -200,6 +201,8 @@ def nofile(path=None, use_sudo=False):
     """
     Require a file to does not exists.
 
+	This is a wrapper around :py:func:`fabtools.files.remove`
+
     Example::
 
         from fabtools import require
@@ -207,10 +210,9 @@ def nofile(path=None, use_sudo=False):
         require.files.nofile('/path/to/file')
         
     """
-    func = use_sudo and run_as_root or run
     
     if is_file(path):
-        func('rm %(path)s' % locals)
+        remove('%(path)s' % locals)
 
 def files(path=None, source=None, md5=None,
          use_sudo=False, owner=None, group='', mode=None, verify_remote=True,
