@@ -147,7 +147,7 @@ def ppa(name, auto_accept=True, keyserver=None):
         update_index()
 
 
-def package(pkg_name, update=False, version=None):
+def package(pkg_name, update=False, version=None, force=False):
     """
     Require a deb package to be installed.
 
@@ -162,7 +162,7 @@ def package(pkg_name, update=False, version=None):
         require.deb.package('firefox', version='11.0+build1-0ubuntu4')
 
     """
-    if not is_installed(pkg_name):
+    if not is_installed(pkg_name) or force:
         install(pkg_name, update=update, version=version)
 
 
@@ -215,7 +215,7 @@ def package_file(pkg_name, filename=None, version=None, directory='packages', ve
             puts('Already installed: %(pkg_name)s %(version)s %(filename)s' % locals())
         
 
-def packages(pkg_list, update=False):
+def packages(pkg_list, update=False, force=True):
     """
     Require several deb packages to be installed.
 
@@ -229,7 +229,7 @@ def packages(pkg_list, update=False):
             'baz',
         ])
     """
-    pkg_list = [pkg for pkg in pkg_list if not is_installed(pkg)]
+    pkg_list = [pkg for pkg in pkg_list if not is_installed(pkg) or force]
     if pkg_list:
         install(pkg_list, update)
 
