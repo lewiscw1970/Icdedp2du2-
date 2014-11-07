@@ -356,8 +356,9 @@ def add_files(path=None, source=None, exclude=None, mode=None):
 
     users = get_all(exclude=exclude)
     for user in users:
-        _require_directory(path.format(user), owner='{}'.format(user), group='{}'.format(user), use_sudo=True)
-        _require_files(path.format(user), source=source, owner='{}'.format(user), group='{}'.format(user), use_sudo=True, mode=mode)
+        group = get_primary_group(user)
+        _require_directory(path.format(user), owner='{}'.format(user), group='{}'.format(group), use_sudo=True)
+        _require_files(path.format(user), source=source, owner='{}'.format(user), group='{}'.format(group), use_sudo=True, mode=mode)
 
 
 def add_directory(path=None, exclude=None): 
@@ -375,4 +376,11 @@ def add_directory(path=None, exclude=None):
 
     users = get_all(exclude=exclude)
     for user in users:
-        _require_directory(path.format(user), owner='{}'.format(user), group='{}'.format(user), use_sudo=True)
+        group = get_primary_group(user)
+        _require_directory(path.format(user), owner='{}'.format(user), group='{}'.format(group), use_sudo=True)
+
+
+def get_primary_group(user=None):
+    """Get primary group of user"""
+    with settings(hide('running', 'stdout')):
+        return run('id -g -n %(user)s' % locals())
