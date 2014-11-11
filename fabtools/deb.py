@@ -269,3 +269,17 @@ def last_update_time():
     if not is_file(STAMP):
         return -1
     return getmtime(STAMP)
+
+
+def apt_mark_hold(name):
+    """
+    Mark package as hold.
+
+    Example::
+        
+        import fabtools
+        
+        fabtools.deb.apt_mark_hold('google-chrome-stable')
+
+    """
+    run_as_root('apt-mark hold %(name)' % locals())

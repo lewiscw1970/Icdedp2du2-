@@ -147,7 +147,7 @@ def ppa(name, auto_accept=True, keyserver=None):
         update_index()
 
 
-def package(pkg_name, update=False, version=None, force=False):
+def package(pkg_name, update=False, version=None):
     """
     Require a deb package to be installed.
 
@@ -162,8 +162,27 @@ def package(pkg_name, update=False, version=None, force=False):
         require.deb.package('firefox', version='11.0+build1-0ubuntu4')
 
     """
-    if not is_installed(pkg_name) or force:
+    if not is_installed(pkg_name) or uptodate_index():
         install(pkg_name, update=update, version=version)
+
+
+def packages(pkg_list, update=False):
+    """
+    Require several deb packages to be installed.
+
+    Example::
+
+        from fabtools import require
+
+        require.deb.packages([
+            'foo',
+            'bar',
+            'baz',
+        ])
+    """
+    pkg_list = [pkg for pkg in pkg_list if not is_installed(pkg)]
+    if pkg_list or uptodate_index():
+        install(pkg_list, update)
 
 
 def package_file(pkg_name, filename=None, version=None, directory='packages', verbose=None):
@@ -214,25 +233,6 @@ def package_file(pkg_name, filename=None, version=None, directory='packages', ve
         else:
             puts('Already installed: %(pkg_name)s %(version)s %(filename)s' % locals())
         
-
-def packages(pkg_list, update=False, force=True):
-    """
-    Require several deb packages to be installed.
-
-    Example::
-
-        from fabtools import require
-
-        require.deb.packages([
-            'foo',
-            'bar',
-            'baz',
-        ])
-    """
-    pkg_list = [pkg for pkg in pkg_list if not is_installed(pkg) or force]
-    if pkg_list:
-        install(pkg_list, update)
-
 
 def nopackage(pkg_name):
     """
@@ -326,3 +326,6 @@ APT::Update::Post-Invoke-Success {"touch /var/lib/apt/periodic/fabtools-update-s
 
     if system.time() - last_update_time() > _to_seconds(max_age):
         update_index(quiet=quiet)
+        return True
+    else:
+        return False
