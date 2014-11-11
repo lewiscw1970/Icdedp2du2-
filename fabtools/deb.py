@@ -53,14 +53,10 @@ def is_version(pkg_name, version):
     """
     Check if a package have version
     """
-    with settings(hide('running', 'stdout', 'stderr', 'warnings'), warn_only=True):
-        res = run("dpkg -s %(pkg_name)s" % locals())
-        for line in res.splitlines():
-            if line.startswith("Version: "):
-                pkg_ver = line[9:]
-                if pkg_ver.startswith(version):
-                    return True
-        return False
+    pkg_ver = get_version(pkg_name)
+    if pkg_ver.startswith(version):
+        return True
+    return False
 
 
 def install_file(path):
@@ -283,3 +279,16 @@ def apt_mark_hold(name):
 
     """
     run_as_root('apt-mark hold %(name)' % locals())
+
+
+def get_version(pkg_name):
+    """
+    Get version of package
+    """
+    with settings(hide('running', 'stdout', 'stderr', 'warnings'), warn_only=True):
+        res = run("dpkg -s %(pkg_name)s" % locals())
+        for line in res.splitlines():
+            if line.startswith("Version: "):
+                pkg_ver = line[9:]
+                return pkg_ver
+        return "%(pkg_name)s not installed" % locals()

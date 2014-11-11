@@ -14,6 +14,8 @@ from fabric.contrib.files import (
     uncomment,
 )
 
+from fabric.colors import green, yellow
+
 from fabtools.deb import (
     add_apt_key,
     apt_key_exists,
@@ -185,7 +187,7 @@ def packages(pkg_list, update=False):
         install(pkg_list, update)
 
 
-def package_file(pkg_name, filename=None, version=None, directory='packages', verbose=None):
+def package_file(pkg_name, filename=None, version=None, directory='packages', quiet=False):
     """
     Require a deb file to be uploaded and installed on remote pc.
     1) Check if package is not installed
@@ -207,7 +209,7 @@ def package_file(pkg_name, filename=None, version=None, directory='packages', ve
     
     """
     from fabtools.require.files import file as _require_file
-    from fabtools.deb import install_file
+    from fabtools.deb import install_file, get_version
     from os.path import exists
 
     do_install = False
@@ -218,6 +220,13 @@ def package_file(pkg_name, filename=None, version=None, directory='packages', ve
         if version and not is_version(pkg_name, version):
             do_install = True
 
+    if not quiet:
+        message = 'name=%(pkg_name)s version=%(version)s filename=%(filename)s' % locals()
+        if do_install:
+            puts(yellow('Installing: %s' % message))
+        else:
+            puts(green('Already installed: %s' % message))
+
     if do_install:
         if exists('%(directory)s/%(filename)s' % locals()):
             _require_file(path='/tmp/%(filename)s' % locals(), source='%(directory)s/%(filename)s' % locals())
@@ -226,12 +235,6 @@ def package_file(pkg_name, filename=None, version=None, directory='packages', ve
         else:
             puts('%(directory)s/%(filename)s does not exists' % locals())
             return False
-
-    if verbose:
-        if do_install:
-            puts('Installing: %(pkg_name)s %(version)s %(filename)s' % locals())
-        else:
-            puts('Already installed: %(pkg_name)s %(version)s %(filename)s' % locals())
         
 
 def nopackage(pkg_name):

@@ -28,6 +28,13 @@ def setup_logger(name, filename):
 def write(text=None, name=None, filename=None):
     """
     Write text to logger
+
+    Example::
+        
+        import fabtools
+
+        fabtools.log.write(text='Debug message', name='fabric', filename='fabric.log')
+
     """
     if not name:
         name = LOG_NAME
