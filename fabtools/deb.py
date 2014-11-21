@@ -59,6 +59,7 @@ def is_version(pkg_name, version):
     return False
 
 
+
 def install_file(path):
     """
     Install program from deb package with *dpkg -i* on remote pc.
@@ -292,3 +293,24 @@ def get_version(pkg_name):
                 pkg_ver = line[9:]
                 return pkg_ver
         return "%(pkg_name)s not installed" % locals()
+
+
+def needs_update(pkg_name):
+    """
+    Check if package needs to update
+    """
+    with settings(hide('running', 'stdout')):
+        res = run("LANG=C apt-cache policy %(pkg_name)s" % locals())
+        for line in res.splitlines():
+            if line.startswith("  Installed: "):
+                installed_version = line.strip().split(' ')[1]
+            else:
+                installed_version = 'Not installed'
+            if line.startswith("  Candidate: "):
+                candidate_version = line.strip().split(' ')[1]
+            else:
+                candidate_version = 'Not candidate'
+        if installed_version == candidate_version:
+            return False
+        else:
+            return True

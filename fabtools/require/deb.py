@@ -26,6 +26,7 @@ from fabtools.deb import (
     uninstall,
     update_index,
     last_update_time,
+    needs_update,
 )
 from fabtools.files import is_file, watch
 from fabtools.system import distrib_codename, distrib_release
@@ -149,7 +150,7 @@ def ppa(name, auto_accept=True, keyserver=None):
         update_index()
 
 
-def package(pkg_name, update=False, version=None):
+def package(pkg_name, update=False, version=None, quiet=False):
     """
     Require a deb package to be installed.
 
@@ -164,11 +165,22 @@ def package(pkg_name, update=False, version=None):
         require.deb.package('firefox', version='11.0+build1-0ubuntu4')
 
     """
-    if not is_installed(pkg_name) or uptodate_index():
+    _needs_update = needs_update(pkg_name)
+    _is_installed = is_installed(pkg_name)
+
+    if not _is_installed and _needs_update:
         install(pkg_name, update=update, version=version)
 
+    if not quiet:
+        if _needs_update:
+            puts(yellow( 'Updating: %s' % pkg_name ))
+        if _is_installed:
+            puts(green( 'Already installed: %s' % pkg_name ))
+        else:
+            puts(yellow( 'Installing: %s' % pkg_name ))
 
-def packages(pkg_list, update=False):
+
+def packages(pkg_list, update=False, quiet=False):
     """
     Require several deb packages to be installed.
 
@@ -182,10 +194,13 @@ def packages(pkg_list, update=False):
             'baz',
         ])
     """
-    pkg_list = [pkg for pkg in pkg_list if not is_installed(pkg)]
-    if pkg_list or uptodate_index():
+    pkg_list = [pkg for pkg in pkg_list if not is_installed(pkg) or needs_update(pkg)]
+    if pkg_list:
         install(pkg_list, update)
 
+        if not quiet:
+            puts(yellow( 'Installing or upgrading packages: %s' % ' '.join(pkg_list) ))
+ 
 
 def package_file(pkg_name, filename=None, version=None, directory='packages', quiet=False):
     """
@@ -199,7 +214,7 @@ def package_file(pkg_name, filename=None, version=None, directory='packages', qu
         
         from fabtools import require
         
-        # Set up version info
+        # Set up package info
         pkg_name = 'tzdata'
         pkg_filename = 'tzdata_2014i-0ubuntu0.14.04_all.deb'
         pkg_version = '2014i'
@@ -214,18 +229,15 @@ def package_file(pkg_name, filename=None, version=None, directory='packages', qu
 
     do_install = False
 
-    if not is_installed(pkg_name):
+    if not is_installed(pkg_name) or (version and not is_version(pkg_name, version)):
         do_install = True
-    elif is_installed(pkg_name):
-        if version and not is_version(pkg_name, version):
-            do_install = True
 
     if not quiet:
         message = 'name=%(pkg_name)s version=%(version)s filename=%(filename)s' % locals()
         if do_install:
-            puts(yellow('Installing: %s' % message))
+            puts(yellow( 'Installing: %s' % message ))
         else:
-            puts(green('Already installed: %s' % message))
+            puts(green( 'Already installed: %s' % message ))
 
     if do_install:
         if exists('%(directory)s/%(filename)s' % locals()):
@@ -235,9 +247,9 @@ def package_file(pkg_name, filename=None, version=None, directory='packages', qu
         else:
             puts('%(directory)s/%(filename)s does not exists' % locals())
             return False
-        
 
-def nopackage(pkg_name):
+
+def nopackage(pkg_name, quiet=False):
     """
     Require a deb package to be uninstalled.
 
@@ -249,9 +261,12 @@ def nopackage(pkg_name):
     """
     if is_installed(pkg_name):
         uninstall(pkg_name)
+        
+        if not quiet:
+            puts(yellow( 'Uninstalling package: %s' % pkg_name) )
 
 
-def nopackages(pkg_list):
+def nopackages(pkg_list, quiet=False):
     """
     Require several deb packages to be uninstalled.
 
@@ -268,6 +283,9 @@ def nopackages(pkg_list):
     pkg_list = [pkg for pkg in pkg_list if is_installed(pkg)]
     if pkg_list:
         uninstall(pkg_list)
+
+        if not quiet:
+            puts(yellow( 'Uninstalling packages: %s' % ' '.join(pkg_list) ))
 
 
 def _to_seconds(var):

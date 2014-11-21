@@ -212,7 +212,7 @@ def nofile(path=None, use_sudo=False):
     """
     
     if is_file(path):
-        remove('%(path)s' % locals)
+        remove('%(path)s' % locals(), use_sudo=use_sudo)
 
 def files(path=None, source=None, md5=None,
          use_sudo=False, owner=None, group='', mode=None, verify_remote=True,
