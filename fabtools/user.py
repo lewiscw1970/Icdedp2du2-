@@ -123,7 +123,7 @@ def create(name, comment=None, home=None, create_home=None, skeleton_dir=None,
 
 
 def modify(name, comment=None, home=None, move_current_home=False, group=None,
-           extra_groups=None, login_name=None, password=None, shell=None,
+           extra_groups=None, groups_append=True, login_name=None, password=None, shell=None,
            uid=None, ssh_public_keys=None, non_unique=False):
     """
     Modify an existing user.
@@ -152,6 +152,8 @@ def modify(name, comment=None, home=None, move_current_home=False, group=None,
         args.append('-g %s' % quote(group))
     if extra_groups:
         groups = ','.join(quote(group) for group in extra_groups)
+        if groups_append:
+            args.append('-a')
         args.append('-G %s' % groups)
     if login_name:
         args.append('-l %s' % quote(login_name))

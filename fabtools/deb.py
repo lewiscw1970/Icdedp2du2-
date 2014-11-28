@@ -75,7 +75,7 @@ def install_file(path):
     manager = 'dpkg -i --skip-same-version'
 
     cmd = '%(manager)s %(path)s' % locals()
-    with settings(hide('running', 'stdout')):
+    with settings(hide('running')):
         run_as_root(cmd, pty=False)
 
 
