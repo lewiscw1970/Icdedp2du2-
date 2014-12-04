@@ -279,3 +279,34 @@ def time():
 
     with settings(hide('running', 'stdout')):
         return int(run('date +%s'))
+
+
+def network_devices():
+    """
+    Return network devices (eth+)
+    """
+
+    devices = run('ip link show | grep -oP "eth\d"')
+    return devices.split('\r\n')
+
+
+def network_info(device='eth0'):
+    """ 
+    Return network information: {'addr': ip_address, 'netmask': netmask, 'network': network}
+
+    """
+
+    ips_info = {}
+        
+    ip_all = run('ip -o addr | grep -oP "{0}\s{{4}}inet\s\d{{1,3}}\.\d{{1,3}}\.\d{{1,3}}\.\d{{1,3}}/\d{{1,2}}"'.format(device)).split()[2]
+    ip_addr = ip_all.split('/')[0]
+    ip_netmask = ip_all.split('/')[1]
+    ip_network_prep = ip_addr.split('.')
+    ip_network_prep[3] = '0'
+    ip_network = '.'.join(ip_network_prep)
+
+    ips_info['addr'] = ip_addr
+    ips_info['netmask'] = ip_netmask
+    ips_info['network'] = ip_network
+
+    return ips_info
