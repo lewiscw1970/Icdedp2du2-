@@ -26,7 +26,7 @@ from fabtools.deb import (
     uninstall,
     update_index,
     last_update_time,
-	needs_update,
+    needs_update,
 )
 from fabtools.files import is_file, watch
 from fabtools.system import distrib_codename, distrib_release

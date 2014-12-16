@@ -201,7 +201,7 @@ def nofile(path=None, use_sudo=False):
     """
     Require a file to does not exists.
 
-	This is a wrapper around :py:func:`fabtools.files.remove`
+    This is a wrapper around :py:func:`fabtools.files.remove`
 
     Example::
 
@@ -231,12 +231,16 @@ def files(path=None, source=None, md5=None,
         require.files.files(path='/home/user/.fonts/', source='files/home/user/.fonts/')
 
     """
-    if source and source.endswith('/'):
-        elements = os.listdir(source)
-        for element in elements:
-            new_source = '{0}{1}'.format(source, element)
-            new_path = '{0}{1}'.format(path, element)
-            file(path=new_path, source=new_source, md5=md5, use_sudo=use_sudo, owner=owner, group=group, mode=mode, verify_remote=verify_remote, temp_dir=temp_dir)
+    if source and path:
+        if source.endswith('/'):
+            elements = [e for e in os.listdir(source) if os.path.isfile(source + e)]
+            print elements
+            for element in elements:
+                new_source = '{0}{1}'.format(source, element)
+                new_path = '{0}{1}'.format(path, element)
+                file(path=new_path, source=new_source, md5=md5, use_sudo=use_sudo, owner=owner, group=group, mode=mode, verify_remote=verify_remote, temp_dir=temp_dir)
+        else:
+            file(path=path, source=source, md5=md5, use_sudo=use_sudo, owner=owner, group=group, mode=mode, verify_remote=verify_remote, temp_dir=temp_dir)
 
 
 def template_file(path=None, template_contents=None, template_source=None, context=None, **kwargs):

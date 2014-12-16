@@ -359,7 +359,8 @@ def add_files(path=None, source=None, exclude=None, mode=None):
     users = get_all(exclude=exclude)
     for user in users:
         group = get_primary_group(user)
-        _require_directory(path.format(user), owner='{}'.format(user), group='{}'.format(group), use_sudo=True)
+        if source.endswith('/'):
+            _require_directory(path.format(user), owner='{}'.format(user), group='{}'.format(group), use_sudo=True)
         _require_files(path.format(user), source=source, owner='{}'.format(user), group='{}'.format(group), use_sudo=True, mode=mode)
 
 
