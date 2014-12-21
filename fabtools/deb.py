@@ -36,16 +36,17 @@ def upgrade(safe=True):
     run_as_root("%(manager)s --assume-yes %(cmd)s" % locals(), pty=False)
 
 
-def is_installed(pkg_name):
+def is_installed(pkg_name, version=None):
     """
-    Check if a package is installed.
+    Check if a package is installed, and in the right version.
+    If version not supply, only check if installed.
     """
     with settings(hide('running', 'stdout', 'stderr', 'warnings'), warn_only=True):
         res = run("dpkg -s %(pkg_name)s" % locals())
         for line in res.splitlines():
-            if line.startswith("Status: "):
-                status = line[8:]
-                if "installed" in status.split(' '):
+            if line.startswith("Version: "):
+                status = line[9:]
+                if not version or status.startwith(version):
                     return True
         return False
 

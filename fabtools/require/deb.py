@@ -115,9 +115,9 @@ def ppa(name, auto_accept=True, keyserver=None):
         update_index()
 
 
-def package(pkg_name, update=False, version=None):
+def package(pkg_name, update=False, version=None, options=None):
     """
-    Require a deb package to be installed.
+    Require a deb package to be installed in exect version.
 
     Example::
 
@@ -130,8 +130,8 @@ def package(pkg_name, update=False, version=None):
         require.deb.package('firefox', version='11.0+build1-0ubuntu4')
 
     """
-    if not is_installed(pkg_name):
-        install(pkg_name, update=update, version=version)
+    if not is_installed(pkg_name, version):
+        install(pkg_name, update=update, version=version, options=options)
 
 
 def packages(pkg_list, update=False):
@@ -153,9 +153,9 @@ def packages(pkg_list, update=False):
         install(pkg_list, update)
 
 
-def nopackage(pkg_name):
+def nopackage(pkg_name, version=None):
     """
-    Require a deb package to be uninstalled.
+    Require a deb package in specific version to be uninstalled.
 
     Example::
 
@@ -163,7 +163,7 @@ def nopackage(pkg_name):
 
         require.deb.nopackage('apache2')
     """
-    if is_installed(pkg_name):
+    if is_installed(pkg_name, version):
         uninstall(pkg_name)
 
 
