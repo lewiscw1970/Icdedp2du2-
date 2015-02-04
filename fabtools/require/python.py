@@ -10,6 +10,8 @@ and installing Python packages using the `pip`_ installer.
 
 """
 
+import os
+
 from fabtools.python import (
     create_virtualenv,
     install,
@@ -69,7 +71,8 @@ def pip(version=MIN_PIP_VERSION, pip_cmd='pip', python_cmd='python'):
     """
     setuptools(python_cmd=python_cmd)
     if not is_pip_installed(version, pip_cmd=pip_cmd):
-        install_pip(python_cmd=python_cmd)
+        use_sudo = False if os.getenv('VIRTUAL_ENV') else True
+        install_pip(python_cmd=python_cmd, use_sudo=use_sudo)
 
 
 def package(pkg_name, url=None, pip_cmd='pip', python_cmd='python',
