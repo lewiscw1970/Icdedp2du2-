@@ -279,7 +279,8 @@ def apt_mark_hold(name):
         fabtools.deb.apt_mark_hold('google-chrome-stable')
 
     """
-    run_as_root('apt-mark hold %(name)' % locals())
+    print locals()
+    run_as_root('apt-mark hold %(name)s' % locals())
 
 
 def get_version(pkg_name):
