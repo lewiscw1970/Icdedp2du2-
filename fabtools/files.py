@@ -108,8 +108,9 @@ def umask(use_sudo=False):
 
     If `use_sudo` is `True`, this function returns root's umask.
     """
-    func = use_sudo and run_as_root or run
-    return func('umask')
+    with settings(hide('running', 'stdout')):
+        func = use_sudo and run_as_root or run
+        return func('umask')
 
 
 def upload_template(filename, destination, context=None, use_jinja=False,
@@ -320,4 +321,4 @@ def remove(path, recursive=False, use_sudo=False):
     """
     func = use_sudo and run_as_root or run
     options = '-r' if recursive else ''
-    func('/bin/rm {} {}'.format(options, quote(path)))
+    func('/bin/rm -f {} {}'.format(options, quote(path)))

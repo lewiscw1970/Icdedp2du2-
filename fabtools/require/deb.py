@@ -8,15 +8,25 @@ and repositories.
 """
 
 from fabric.utils import puts
+from fabric.contrib.files import (
+    contains,
+    comment,
+    uncomment,
+)
+
+from fabric.colors import green, yellow
 
 from fabtools.deb import (
     add_apt_key,
     apt_key_exists,
     install,
+    install_file,
     is_installed,
+    is_version,
     uninstall,
     update_index,
     last_update_time,
+    needs_update,
 )
 from fabtools.files import is_file, watch
 from fabtools.system import distrib_codename, distrib_release
@@ -75,6 +85,31 @@ def source(name, uri, distribution, *components):
         update_index()
 
 
+def source_list(component):
+    """
+    Require a component in /etc/apt/sources.list uncommented.
+
+    Example::
+        
+        from fabtools import require
+
+        require.deb.source_list('partner')
+
+    """
+    regex = '^#\s{0,1}deb\s.*%(component)s.*$' % locals()
+    if contains('/etc/apt/sources.list', text=regex, escape=False):
+        uncomment('/etc/apt/sources.list', regex=regex, use_sudo=True, char='# ')
+
+
+def nosource_list(component):
+    """
+    Require a component in /etc/apt/sources.list commented. See :py:func:`fabtools.require.deb.source_list`
+    """
+    regex = '^deb\s.*%(component)s.*$' % locals()
+    if contains('/etc/apt/sources.list', text=regex, escape=False):
+        comment('/etc/apt/sources.list', regex=regex, use_sudo=True, char='# ')
+
+
 def ppa(name, auto_accept=True, keyserver=None):
     """
     Require a `PPA`_ package source.
@@ -130,7 +165,7 @@ def package(pkg_name, update=False, version=None):
         require.deb.package('firefox', version='11.0+build1-0ubuntu4')
 
     """
-    if not is_installed(pkg_name):
+    if not is_installed(pkg_name) or needs_update(pkg_name):
         install(pkg_name, update=update, version=version)
 
 
@@ -148,10 +183,45 @@ def packages(pkg_list, update=False):
             'baz',
         ])
     """
-    pkg_list = [pkg for pkg in pkg_list if not is_installed(pkg)]
+    pkg_list = [pkg for pkg in pkg_list if not is_installed(pkg) or needs_update(pkg)]
     if pkg_list:
         install(pkg_list, update)
 
+
+def package_file(pkg_name, filename=None, version=None, directory='packages'):
+    """
+    Require a deb file to be uploaded and installed on remote pc.
+    1) Check if package is not installed
+    2) Check if installed package *starts with* version
+    3) Upload *directory/filename* to remote host
+    4) Install */tmp/filename* on remote host
+    
+    Example::
+        
+        from fabtools import require
+        
+        # Set up version info
+        pkg_name = 'tzdata'
+        pkg_filename = 'tzdata_2014i-0ubuntu0.14.04_all.deb'
+        pkg_version = '2014i'
+
+        # Require package with name 'tzdata' and version '2014i' is installed
+        require.deb.package_file(pkg_name=pkg_name, filename=pkg_filename, version=pkg_version)
+    
+    """
+    from fabtools.require.files import file as _require_file
+    from fabtools.deb import install_file, get_version
+    from os.path import exists
+
+    if not is_installed(pkg_name) or (version and not is_version(pkg_name, version)):
+        if exists('%(directory)s/%(filename)s' % locals()):
+            _require_file(path='/tmp/%(filename)s' % locals(), source='%(directory)s/%(filename)s' % locals())
+            install_file('/tmp/%(filename)s' % locals())
+            return True
+        else:
+            puts('%(directory)s/%(filename)s does not exists' % locals())
+            return False
+        
 
 def nopackage(pkg_name):
     """
@@ -245,3 +315,6 @@ APT::Update::Post-Invoke-Success {"touch /var/lib/apt/periodic/fabtools-update-s
 
     if system.time() - last_update_time() > _to_seconds(max_age):
         update_index(quiet=quiet)
+        return True
+    else:
+        return False

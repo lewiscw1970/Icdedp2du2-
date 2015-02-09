@@ -123,7 +123,7 @@ def create(name, comment=None, home=None, create_home=None, skeleton_dir=None,
 
 
 def modify(name, comment=None, home=None, move_current_home=False, group=None,
-           extra_groups=None, login_name=None, password=None, shell=None,
+           extra_groups=None, groups_append=True, login_name=None, password=None, shell=None,
            uid=None, ssh_public_keys=None, non_unique=False):
     """
     Modify an existing user.
@@ -152,6 +152,8 @@ def modify(name, comment=None, home=None, move_current_home=False, group=None,
         args.append('-g %s' % quote(group))
     if extra_groups:
         groups = ','.join(quote(group) for group in extra_groups)
+        if groups_append:
+            args.append('-a')
         args.append('-G %s' % groups)
     if login_name:
         args.append('-l %s' % quote(login_name))
@@ -300,3 +302,88 @@ def add_host_keys(name, hostname):
         if host_key not in known_hosts:
             sudo('echo %s >>%s' % (quote(host_key),
                                    quote(known_hosts_filename)))
+
+
+def get_all(exclude=None, uid_start='1000', uid_end='1100'):
+    """
+    Get all users from */etc/passwd* with uid >= *uid_start* and uid <= *uid_end*
+    
+    *exclude* must be a list of username for exclude: exclude=['testuser', 'sysadm']
+
+    Example::
+    
+        import fabtools
+
+        print fabtools.user.get_all(exclude=[
+            'testuser',
+            'sysadm',
+        ])
+    
+    """
+
+    args = []
+
+    if exclude:
+        for user in exclude:
+            args.append('&& $1 !~ /%(user)s/' % locals())
+
+    if len(args) != 0:
+        args = ' '.join(args)
+    else:
+        args = ''
+
+    cmd = "awk 'BEGIN {FS=\":\"} {if ($3 >= %(uid_start)s && $3 <= %(uid_end)s %(args)s) print $1}' /etc/passwd" % locals()
+
+    with settings(hide('running', 'output')):
+        users = run(cmd)
+        if users:
+            return users.split('\r\n')
+        else:
+            return False
+
+
+def add_files(path=None, source=None, exclude=None, mode=None):
+    """
+    Add file to all users /home directory, change owner and group.
+    
+    *exclude* must be a list of username for exclude.
+    
+    This is a wrapper around py:func:`fabtools.require.files.directory` and py:func:`fabtools.require.files.files`
+    """
+
+    from fabtools.require.files import (
+        files as _require_files,
+        directory as _require_directory,
+    )
+
+    users = get_all(exclude=exclude)
+    for user in users:
+        group = get_primary_group(user)
+        if source.endswith('/'):
+            _require_directory(path.format(user), owner='{}'.format(user), group='{}'.format(group), use_sudo=True)
+        _require_files(path.format(user), source=source, owner='{}'.format(user), group='{}'.format(group), use_sudo=True, mode=mode)
+
+
+def add_directory(path=None, exclude=None): 
+    """
+    Add directory to all users /home directory, change owner and group.
+    
+    *exclude* must be a list of username for exclude.
+    
+    This is a wrapper around py:func:`fabtools.require.files.directory`
+    """
+
+    from fabtools.require.files import (
+        directory as _require_directory,
+    )
+
+    users = get_all(exclude=exclude)
+    for user in users:
+        group = get_primary_group(user)
+        _require_directory(path.format(user), owner='{}'.format(user), group='{}'.format(group), use_sudo=True)
+
+
+def get_primary_group(user=None):
+    """Get primary group of user"""
+    with settings(hide('running', 'stdout')):
+        return run('id -g -n %(user)s' % locals())

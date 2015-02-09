@@ -23,6 +23,7 @@ from fabtools.files import (
     mode as _mode,
     owner as _owner,
     umask,
+    remove,
 )
 from fabtools.utils import run_as_root
 import fabtools.files
@@ -53,11 +54,11 @@ def directory(path, use_sudo=False, owner='', group='', mode=''):
     # Ensure correct owner
     if (owner and _owner(path, use_sudo) != owner) or \
        (group and _group(path, use_sudo) != group):
-        func('chown %(owner)s:%(group)s "%(path)s"' % locals())
+        func('chown -R %(owner)s:%(group)s "%(path)s"' % locals())
 
     # Ensure correct mode
     if mode and _mode(path, use_sudo) != mode:
-        func('chmod %(mode)s "%(path)s"' % locals())
+        func('chmod -R %(mode)s "%(path)s"' % locals())
 
 
 def directories(path_list, use_sudo=False, owner='', group='', mode=''):
@@ -194,6 +195,52 @@ def file(path=None, contents=None, source=None, url=None, md5=None,
         mode = oct(0666 & ~int(umask(use_sudo=True), base=8))
     if mode and _mode(path, use_sudo) != mode:
         func('chmod %(mode)s "%(path)s"' % locals())
+
+
+def nofile(path=None, use_sudo=False):
+    """
+    Require a file to does not exists.
+
+    This is a wrapper around :py:func:`fabtools.files.remove`
+
+    Example::
+
+        from fabtools import require
+        
+        require.files.nofile('/path/to/file')
+        
+    """
+    
+    if is_file(path):
+        remove('%(path)s' % locals(), use_sudo=use_sudo)
+
+def files(path=None, source=None, md5=None,
+         use_sudo=False, owner=None, group='', mode=None, verify_remote=True,
+         temp_dir='/tmp'):
+    """
+    Require a files to exist and have specific contents and properties.
+
+    Source *must be* a directory *(ends with '/')*.
+
+    This is a wrapper arount py:func:`fabtools.require.files.file`.
+
+    Example::
+
+        from fabtools import require
+
+        require.files.files(path='/home/user/.fonts/', source='files/home/user/.fonts/')
+
+    """
+    if source and path:
+        if source.endswith('/'):
+            elements = [e for e in os.listdir(source) if os.path.isfile(source + e)]
+            print elements
+            for element in elements:
+                new_source = '{0}{1}'.format(source, element)
+                new_path = '{0}{1}'.format(path, element)
+                file(path=new_path, source=new_source, md5=md5, use_sudo=use_sudo, owner=owner, group=group, mode=mode, verify_remote=verify_remote, temp_dir=temp_dir)
+        else:
+            file(path=path, source=source, md5=md5, use_sudo=use_sudo, owner=owner, group=group, mode=mode, verify_remote=verify_remote, temp_dir=temp_dir)
 
 
 def template_file(path=None, template_contents=None, template_source=None, context=None, **kwargs):
