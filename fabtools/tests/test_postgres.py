@@ -18,7 +18,7 @@ class TestRequirePostgresDatabase(unittest.TestCase):
         underlying create_database call
         """
         from fabtools import require
-        database_exists.return_value = Falsec
+        database_exists.return_value = False
         run.return_value = 'en-US.UTF-8\nde-DE.UTF-8'
         require.postgres.database('foo', 'bar', locale='some_locale',
                                   encoding='some_encoding',
