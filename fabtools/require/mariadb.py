@@ -15,7 +15,9 @@ from fabtools.system import distrib_codename
 
 def server(version='10.0', password=None):
     """
-    Require a MySQL server to be installed and running.
+    Require a MariaDB server to be installed and running.  'Version' is the high level MariaDB series
+    available (See https://downloads.mariadb.com/files/MariaDB/repo).  Not all versions available for
+    all Deb systems.  Double check availability at mariadb.org.
 
     Example::
 
