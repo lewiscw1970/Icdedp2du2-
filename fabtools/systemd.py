@@ -8,7 +8,7 @@ This module provides low-level tools for managing `systemd`_ services.
 
 """
 
-from fabric.api import hide, settings
+from fabric.api import hide, settings, sudo
 
 from fabtools.utils import run_as_root
 
@@ -52,8 +52,18 @@ def is_running(service):
         if fabtools.systemd.is_running('httpd'):
             print("Service httpd is running!")
     """
-    with settings(hide('running', 'stdout', 'stderr', 'warnings'), warn_only=True):
-        return action('status', service).succeeded
+    # with settings(hide('running', 'stdout', 'stderr', 'warnings'), warn_only=True):
+    #     return action('status', service).succeeded
+
+    # On Arch, Systemctl can return 3 types of outpout:
+    # - Nothing
+    # - Service loaded but not active
+    # - Service active
+    # Well, that return you made won't work here so I used this one. 
+    # Much more ugly but I didn't find a bettery way
+
+    if sudo('systemctl | grep {0}.service').format(service):
+        return True
 
 
 def start(service):
