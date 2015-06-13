@@ -49,7 +49,7 @@ def command():
 
 
 def working_copy(remote_url, path=None, branch="master", update=True,
-                 use_sudo=False, user=None):
+                 use_sudo=False, user=None, ff_only=False):
     """
     Require a working copy of the repository from the ``remote_url``.
 
@@ -112,7 +112,7 @@ def working_copy(remote_url, path=None, branch="master", update=True,
         git.checkout(path=path, branch=branch, use_sudo=use_sudo, user=user)
         if update:
             # only 'merge' if update is True
-            git.pull(path=path, use_sudo=use_sudo, user=user)
+            git.pull(path=path, use_sudo=use_sudo, user=user, ff_only)
 
     elif not is_dir(path, use_sudo=use_sudo):
         git.clone(remote_url, path=path, use_sudo=use_sudo, user=user)
