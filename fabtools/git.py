@@ -167,7 +167,7 @@ def pull(path, use_sudo=False, user=None, force=False, ff_only=False):
     options = []
     if force:
         options.append('--force')
-     if ff_only:
+    if ff_only:
         options.append('--ff-only')
     options = ' '.join(options)
 
