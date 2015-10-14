@@ -35,17 +35,19 @@ def command():
 
     res = run('git --version', quiet=True)
     if res.failed:
+        dispatch_family = {
+            'debian': lambda: require_deb_package('git-core'),
+            'redhat': lambda: require_rpm_package('git'),
+            'sun': lambda: require_pkg_package('scmgit-base'),
+            'gentoo': lambda: require_portage_package('dev-vcs/git')
+        }
         family = distrib_family()
-        if family == 'debian':
-            require_deb_package('git-core')
-        elif family == 'redhat':
-            require_rpm_package('git')
-        elif family == 'sun':
-            require_pkg_package('scmgit-base')
-        elif family == 'gentoo':
-            require_portage_package('dev-vcs/git')
-        else:
-            raise UnsupportedFamily(supported=['debian', 'redhat', 'sun', 'gentoo'])
+
+        try:
+            dispatch_family[family]()
+        except KeyError:
+            raise UnsupportedFamily(
+                supported=['debian', 'redhat', 'sun', 'gentoo'])
 
 
 def working_copy(remote_url, path=None, branch="master", update=True,
