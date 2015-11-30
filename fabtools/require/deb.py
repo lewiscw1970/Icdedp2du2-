@@ -90,7 +90,7 @@ def ppa(name, auto_accept=True, keyserver=None):
     """
     assert name.startswith('ppa:')
 
-    user, repo = name[4:].split('/', 2)
+    user, repo = name[4:].split('/', 1)
 
     release = float(distrib_release())
     if release >= 12.04:
