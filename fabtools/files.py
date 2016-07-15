@@ -20,6 +20,9 @@ from fabric.contrib.files import exists
 
 from fabtools.utils import run_as_root
 
+# Python2 and 3 basestring compatibility
+from past.builtins import basestring
+from builtins import str
 
 def is_file(path, use_sudo=False):
     """
@@ -163,25 +166,25 @@ def md5sum(filename, use_sudo=False):
                   warn_only=True):
         # Linux (LSB)
         if exists(u'/usr/bin/md5sum'):
-            res = func(u'/usr/bin/md5sum %(filename)s' % locals())
+            res = func(u'/usr/bin/md5sum %(filename)s' % str(locals()))
         # BSD / OS X
         elif exists(u'/sbin/md5'):
-            res = func(u'/sbin/md5 -r %(filename)s' % locals())
+            res = func(u'/sbin/md5 -r %(filename)s' % str(locals()))
         # SmartOS Joyent build
         elif exists(u'/opt/local/gnu/bin/md5sum'):
-            res = func(u'/opt/local/gnu/bin/md5sum %(filename)s' % locals())
+            res = func(u'/opt/local/gnu/bin/md5sum %(filename)s' % str(locals()))
         # SmartOS Joyent build
         # (the former doesn't exist, at least on joyent_20130222T000747Z)
         elif exists(u'/opt/local/bin/md5sum'):
-            res = func(u'/opt/local/bin/md5sum %(filename)s' % locals())
+            res = func(u'/opt/local/bin/md5sum %(filename)s' % str(locals()))
         # Try to find ``md5sum`` or ``md5`` on ``$PATH`` or abort
         else:
             md5sum = func(u'which md5sum')
             md5 = func(u'which md5')
             if exists(md5sum):
-                res = func('%(md5sum)s %(filename)s' % locals())
+                res = func('%(md5sum)s %(filename)s' % str(locals()))
             elif exists(md5):
-                res = func('%(md5)s %(filename)s' % locals())
+                res = func('%(md5)s %(filename)s' % str(locals()))
             else:
                 abort('No MD5 utility was found on this system.')
 
