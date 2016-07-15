@@ -34,7 +34,6 @@ from fabric.context_managers import (
     warn_only as warn_only_manager,
 )
 
-
 @contextmanager
 def guest(name_or_ctid):
     """

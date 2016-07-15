@@ -7,7 +7,6 @@ from fabric.api import hide, run, settings, sudo
 
 from fabtools.files import is_file
 
-
 def interfaces():
     """
     Get the list of network interfaces. Will return all datalinks on SmartOS.
@@ -17,7 +16,7 @@ def interfaces():
             res = run('/usr/sbin/dladm show-link')
         else:
             res = sudo('/sbin/ifconfig -s')
-    return map(lambda line: line.split(' ')[0], res.splitlines()[1:])
+    return list(map(lambda line: line.split(' ')[0], res.splitlines()[1:]))
 
 
 def address(interface):

@@ -23,6 +23,9 @@ from fabtools.system import distrib_codename, distrib_release
 from fabtools.utils import run_as_root
 from fabtools import system
 
+# Python2 and 3 compatibility
+from past.builtins import basestring
+
 
 def key(keyid, filename=None, url=None, keyserver='subkeys.pgp.net',
         update=False):
@@ -196,7 +199,7 @@ def _to_seconds(var):
     WEEK = 7 * DAY
     MONTH = 31 * DAY
     try:
-        for key, value in var.items():
+        for key, value in list(var.items()):
             if key in ('second', 'seconds'):
                 sec += value
             elif key in ('minute', 'minutes'):

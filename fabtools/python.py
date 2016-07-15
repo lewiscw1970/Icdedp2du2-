@@ -23,6 +23,9 @@ from fabric.utils import puts
 from fabtools.files import is_file
 from fabtools.utils import abspath, download, run_as_root
 
+# Python2 and 3 compatibility
+from past.builtins import basestring
+
 
 GET_PIP_URL = 'https://bootstrap.pypa.io/get-pip.py'
 
