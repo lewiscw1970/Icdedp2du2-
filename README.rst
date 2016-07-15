@@ -12,17 +12,17 @@ Using ``fabtools.require`` allows you to use a more declarative style, similar t
 Installing
 ==========
 
-To install the latest release from `PyPI <http://pypi.python.org/pypi/fabtools>`_
+To install the latest release from `PyPI <http://pypi.python.org/pypi/fabtools-python>`_
 
 .. code-block:: console
 
-    $ pip install fabtools
+    $ pip install fabtools-python
 
-To install the latest development version from `GitHub <https://github.com/ronnix/fabtools>`_
+To install the latest development version from `GitHub <https://github.com/n0n0x/fabtools3>`_
 
 .. code-block:: console
 
-    $ pip install git+git://github.com/ronnix/fabtools.git
+    $ pip install git+git://github.com/n0n0x/fabtools3.git
 
 Example
 =======
