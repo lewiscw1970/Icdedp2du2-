@@ -1,3 +1,10 @@
+Disclaimer
+==========
+
+This is a Fork from Ronnix's original `Fabtools <https://github.com/ronnix/fabtools>`_ work.
+
+This fork was made in order to provide both python2 and python3 compatibility using `Fabric3 <https://github.com/mathiasertl/fabric/>`_ fork
+
 About
 =====
 
@@ -18,11 +25,11 @@ To install the latest release from `PyPI <http://pypi.python.org/pypi/fabtools-p
 
     $ pip install fabtools-python
 
-To install the latest development version from `GitHub <https://github.com/n0n0x/fabtools3>`_
+To install the latest development version from `GitHub <https://github.com/n0n0x/fabtools-python>`_
 
 .. code-block:: console
 
-    $ pip install git+git://github.com/n0n0x/fabtools3.git
+    $ pip install git+git://github.com/n0n0x/fabtools-python.git
 
 Example
 =======
