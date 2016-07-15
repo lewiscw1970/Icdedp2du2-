@@ -13,6 +13,9 @@ from fabric.api import cd, run
 
 from fabtools.utils import download, run_as_root
 
+# Python2 and 3 compatibility
+from past.builtins import basestring
+
 
 EZ_SETUP_URL = 'https://bootstrap.pypa.io/ez_setup.py'
 

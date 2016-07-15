@@ -11,6 +11,9 @@ from fabric.api import hide, run, settings
 
 from fabtools.utils import run_as_root
 
+# Python2 and 3 compatibility
+from past.builtins import basestring
+
 
 def pkg_manager():
     with settings(hide('running', 'stdout', 'stderr', 'warnings'), warn_only=True):

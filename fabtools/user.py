@@ -17,6 +17,9 @@ from fabtools.group import (
 from fabtools.files import uncommented_lines
 from fabtools.utils import run_as_root
 
+# Python2 and 3 compatibility
+from past.builtins import basestring
+
 
 def exists(name):
     """
