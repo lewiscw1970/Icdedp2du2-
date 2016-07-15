@@ -40,6 +40,7 @@ setup(
     license='BSD',
     install_requires=[
         "fabric>=1.7.0",
+        "future>=0.15.2",
     ],
     setup_requires=[],
     tests_require=[
