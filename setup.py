@@ -30,16 +30,16 @@ class Tox(TestCommand):
 
 
 setup(
-    name='fabtools',
-    version='0.20.0-dev',
-    description='Tools for writing awesome Fabric files',
+    name='fabtools-python',
+    version='0.19.1',
+    description='Fabtools version compatible with both Python2 and Python3',
     long_description=read('README.rst') + '\n' + read('docs/CHANGELOG.rst'),
-    author='Ronan Amicel',
-    author_email='ronan.amicel@gmail.com',
+    author='Santiago del Castillo',
+    author_email='delcas@gmail.com',
     url='http://fabtools.readthedocs.org/',
     license='BSD',
     install_requires=[
-        "fabric>=1.7.0",
+        "Fabric3>=1.1.1",
         "future>=0.15.2",
     ],
     setup_requires=[],
@@ -53,7 +53,7 @@ setup(
     include_package_data=True,
     zip_safe=False,
     classifiers=[
-        'Development Status :: 3 - Alpha',
+        'Development Status :: 4 - Beta',
         'Environment :: Console',
         'Intended Audience :: Developers',
         'Intended Audience :: System Administrators',
@@ -64,6 +64,10 @@ setup(
         'Programming Language :: Python',
         'Programming Language :: Python :: 2.6',
         'Programming Language :: Python :: 2.7',
+        'Programming Language :: Python :: 3',
+        'Programming Language :: Python :: 3.3',
+        'Programming Language :: Python :: 3.4',
+        'Programming Language :: Python :: 3.5',
         'Topic :: Software Development',
         'Topic :: Software Development :: Build Tools',
         'Topic :: Software Development :: Libraries',
