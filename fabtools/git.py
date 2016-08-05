@@ -137,7 +137,7 @@ def fetch(path, use_sudo=False, user=None, remote=None):
             run(cmd)
 
 
-def pull(path, use_sudo=False, user=None, force=False):
+def pull(path, use_sudo=False, user=None, force=False, remote="origin", branch="master"):
     """
     Fetch changes from the default remote repository and merge them.
 
@@ -167,7 +167,7 @@ def pull(path, use_sudo=False, user=None, force=False):
         options.append('--force')
     options = ' '.join(options)
 
-    cmd = 'git pull %s' % options
+    cmd = 'git pull %s %s %s' % (remote, branch, options)
 
     with cd(path):
         if use_sudo and user is None:
