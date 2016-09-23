@@ -67,7 +67,7 @@ def guest(name_or_ctid):
 
     def run_guest_command(command, shell=True, pty=True, combine_stderr=True,
         sudo=False, user=None, quiet=False, warn_only=False, stdout=None,
-        stderr=None, group=None, timeout=None):
+        stderr=None, group=None, timeout=None,**kwargs):
         """
         Run command inside a guest container
         """
