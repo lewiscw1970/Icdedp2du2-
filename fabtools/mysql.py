@@ -12,12 +12,18 @@ from fabric.api import env, hide, puts, run, settings
 
 from fabtools.utils import run_as_root
 
+from fabtools.deb import (
+    install,
+    is_installed,
+)
+
 
 def query(query, use_sudo=True, **kwargs):
     """
     Run a MySQL query.
     """
     func = use_sudo and run_as_root or run
+    func_mysql = 'mysql'
 
     user = kwargs.get('mysql_user') or env.get('mysql_user')
     password = kwargs.get('mysql_password') or env.get('mysql_password')
@@ -30,10 +36,14 @@ def query(query, use_sudo=True, **kwargs):
     if user:
         options.append('--user=%s' % quote(user))
     if password:
-        options.append('--password=%s' % quote(password))
+        if not is_installed('sshpass'):
+            install('sshpass', update=True)
+        func_mysql = 'sshpass -p %(password)s mysql' % {'password': password}
+        options.append('--password')
     options = ' '.join(options)
 
-    return func('mysql %(options)s --execute=%(query)s' % {
+    return func('%(cmd)s %(options)s --execute=%(query)s' % {
+        'cmd': func_mysql,
         'options': options,
         'query': quote(query),
     })
