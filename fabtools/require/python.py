@@ -10,6 +10,10 @@ and installing Python packages using the `pip`_ installer.
 
 """
 
+import os
+
+from fabric.api import hide, run, settings
+
 from fabtools.python import (
     create_virtualenv,
     install,
@@ -69,7 +73,9 @@ def pip(version=MIN_PIP_VERSION, pip_cmd='pip', python_cmd='python'):
     """
     setuptools(python_cmd=python_cmd)
     if not is_pip_installed(version, pip_cmd=pip_cmd):
-        install_pip(python_cmd=python_cmd)
+        with settings(hide('running', 'stdout', 'stderr', 'warnings'), warn_only=True):
+            use_sudo = run('echo $VIRTUAL_ENV') == ''
+        install_pip(python_cmd=python_cmd, use_sudo=use_sudo)
 
 
 def package(pkg_name, url=None, pip_cmd='pip', python_cmd='python',
