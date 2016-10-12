@@ -42,10 +42,12 @@ def ssh_config(name=''):
     return config
 
 
-def _settings_dict(config):
+def _settings_dict(config, user=None):
     settings = {}
 
-    user = config['User']
+    if user is None:
+        user = config['User']
+
     hostname = config['HostName']
     port = config['Port']
 
@@ -83,10 +85,24 @@ def vagrant(name=''):
 
         $ fab vagrant some_task
 
+    You can also set ssh user to use, example ::
+
+        from fabric.api import *
+        from fabtools.vagrant import vagrant
+
+        env.vagrant_user = 'root'
+
+        @task
+        def some_task():
+            run('whoami') # this return 'root'
+
     """
     config = ssh_config(name)
 
-    extra_args = _settings_dict(config)
+    extra_args = _settings_dict(
+        config,
+        user=env.vagrant_user if 'vagrant_user' in env else None
+    )
     env.update(extra_args)
 
 
