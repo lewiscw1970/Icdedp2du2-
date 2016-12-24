@@ -11,6 +11,9 @@ from fabric.api import hide, run, settings
 
 from fabtools.utils import run_as_root
 
+# Python2 and 3 compatibility
+from past.builtins import basestring
+
 
 MANAGER = 'yum -y --color=never'
 
@@ -204,4 +207,4 @@ def repolist(status='', media=None):
             repos = run_as_root("%(manager)s repolist %(status)s | sed '$d' | sed -n '/repo id/,$p'" % locals())
         else:
             repos = run_as_root("%(manager)s repolist %(status)s | sed '/Media\\|Debug/d' | sed '$d' | sed -n '/repo id/,$p'" % locals())
-        return map(lambda line: line.split(' ')[0], repos.splitlines()[1:])
+        return list(map(lambda line: line.split(' ')[0], repos.splitlines()[1:]))

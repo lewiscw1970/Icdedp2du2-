@@ -6,6 +6,7 @@ This module provides tools to manage periodic tasks using cron.
 
 """
 
+from future.utils import iteritems
 
 def add_task(name, timespec, user, command, environment=None):
     """
@@ -39,7 +40,7 @@ def add_task(name, timespec, user, command, environment=None):
     lines = []
 
     # Write optional environment variables first
-    for key, value in environment.iteritems():
+    for (key, value) in iteritems(environment):
         lines.append('%(key)s=%(value)s\n' % locals())
 
     # Write the main crontab line

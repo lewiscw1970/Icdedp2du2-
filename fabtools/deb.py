@@ -12,6 +12,8 @@ from fabric.api import hide, run, settings
 from fabtools.utils import run_as_root
 from fabtools.files import getmtime, is_file
 
+# Python2 and 3 basestring compatibility
+from past.builtins import basestring
 
 MANAGER = 'DEBIAN_FRONTEND=noninteractive apt-get'
 
@@ -134,7 +136,7 @@ def preseed_package(pkg_name, preseed):
         fabtools.deb.install('postfix')
 
     """
-    for q_name, _ in preseed.items():
+    for q_name, _ in list(preseed.items()):
         q_type, q_answer = _
         run_as_root('echo "%(pkg_name)s %(q_name)s %(q_type)s %(q_answer)s" | debconf-set-selections' % locals())
 
