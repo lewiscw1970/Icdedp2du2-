@@ -32,7 +32,7 @@ def command():
         require_deb_package('curl')
     elif family == 'redhat':
         require_rpm_package('curl')
-    elif family == 'Arch':
+    elif family == 'arch':
         require_arch_package('curl')
     else:
-        raise UnsupportedFamily(supported=['debian', 'redhat', 'Arch'])
+        raise UnsupportedFamily(supported=['arch', 'debian', 'redhat'])

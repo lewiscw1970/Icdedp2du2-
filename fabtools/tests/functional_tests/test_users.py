@@ -18,7 +18,7 @@ def test_create_user_without_home_directory():
         assert not is_dir('/home/user1')
 
     finally:
-        run_as_root('userdel -r user1')
+        run_as_root('userdel -r user1', warn_only=True)
 
 
 def test_create_user_with_default_home_directory():
@@ -32,7 +32,7 @@ def test_create_user_with_default_home_directory():
         assert is_dir('/home/user2')
 
     finally:
-        run_as_root('userdel -r user2')
+        run_as_root('userdel -r user2', warn_only=True)
 
 
 def test_create_user_with_home_directory():
@@ -47,7 +47,7 @@ def test_create_user_with_home_directory():
         assert is_dir('/tmp/user3')
 
     finally:
-        run_as_root('userdel -r user3')
+        run_as_root('userdel -r user3', warn_only=True)
 
 
 def test_create_system_user_without_home_directory():
@@ -61,7 +61,7 @@ def test_create_system_user_without_home_directory():
         assert not is_dir('/home/user4')
 
     finally:
-        run_as_root('userdel -r user4')
+        run_as_root('userdel -r user4', warn_only=True)
 
 
 def test_create_system_user_with_home_directory():
@@ -75,7 +75,7 @@ def test_create_system_user_with_home_directory():
         assert is_dir('/var/lib/foo')
 
     finally:
-        run_as_root('userdel -r user5')
+        run_as_root('userdel -r user5', warn_only=True)
 
 
 def test_create_two_users_with_the_same_uid():
@@ -114,7 +114,7 @@ def test_require_user_without_home():
         user('req1')
 
     finally:
-        run_as_root('userdel -r req1')
+        run_as_root('userdel -r req1', warn_only=True)
 
 
 def test_require_user_with_default_home():
@@ -129,7 +129,7 @@ def test_require_user_with_default_home():
         assert is_dir('/home/req2')
 
     finally:
-        run_as_root('userdel -r req2')
+        run_as_root('userdel -r req2', warn_only=True)
 
 
 def test_require_user_with_custom_home():
@@ -145,7 +145,7 @@ def test_require_user_with_custom_home():
         assert is_dir('/home/other')
 
     finally:
-        run_as_root('userdel -r req3')
+        run_as_root('userdel -r req3', warn_only=True)
 
 
 def test_require_user_with_ssh_public_keys():
@@ -156,9 +156,15 @@ def test_require_user_with_ssh_public_keys():
     try:
         tests_dir = os.path.dirname(os.path.dirname(__file__))
         public_key_filename = os.path.join(tests_dir, 'id_test.pub')
+        public_key_filename2 = os.path.join(tests_dir, 'id_test2.pub')
+        multiple_public_key_filename = \
+            os.path.join(tests_dir, 'test_authorized_keys')
 
         with open(public_key_filename) as public_key_file:
             public_key = public_key_file.read().strip()
+
+        with open(public_key_filename2) as public_key_file:
+            public_key2 = public_key_file.read().strip()
 
         user('req4', home='/tmp/req4', ssh_public_keys=public_key_filename)
 
@@ -169,7 +175,23 @@ def test_require_user_with_ssh_public_keys():
         user('req4', home='/tmp/req4', ssh_public_keys=public_key_filename)
 
         keys = authorized_keys('req4')
-        assert keys == [public_key]
+
+        # Now add a file with multiple public keys
+        user('req5', home='/tmp/req5',
+             ssh_public_keys=multiple_public_key_filename)
+
+        keys = authorized_keys('req5')
+        assert keys == [public_key, public_key2], keys
+
+        # Now adding them individually or again shouldn't affect anything
+        user('req5', home='/tmp/req5', ssh_public_keys=[
+            public_key_filename2,
+            public_key_filename,
+            multiple_public_key_filename
+        ])
+
+        keys = authorized_keys('req5')
+        assert keys == [public_key, public_key2], keys
 
     finally:
-        run_as_root('userdel -r req4')
+        run_as_root('userdel -r req4', warn_only=True)
