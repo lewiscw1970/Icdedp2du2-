@@ -137,3 +137,74 @@ def default_locale(name):
     else:
         config_file = '/etc/default/locale'
     require_file(config_file, contents, use_sudo=True)
+
+
+class UnsupportedTimezone(Exception):
+
+    def __init__(self, timezone):
+        self.timezone = timezone
+        msg = "Unsupported timezone: %s" % self.timezone
+        super(UnsupportedTimezone, self).__init__(msg)
+
+
+def timezone(name):
+    """
+    Require the timezone to be set.
+
+    Argument is the common name of time zone: ::
+
+        from fabtools.require.system import timezone
+
+        timezone('America/Chicago')
+
+    The list of time zone names can be found in ``/usr/share/zoneinfo/``.
+
+    Raises UnsupportedTimezone if the required timezone is not supported.
+    """
+    from fabtools.files import is_file, remove, symlink, md5sum
+    from fabtools.require import file as require_file
+    from fabtools.require import service as require_service
+    from fabtools.utils import run_as_root
+    from pipes import quote
+
+    zone_file = "/usr/share/zoneinfo/%s" % name
+    sys_localtime = "/etc/localtime"
+    sys_timezone = "/etc/timezone"
+    sys_clock = "/etc/sysconfig/clock"
+
+    # Check if zone file by name does exists
+    if not is_file(zone_file):
+        raise UnsupportedTimezone(name)
+
+    # No way, too strange and better to stop now
+    if not is_file(sys_localtime):
+        raise FileNotFoundError(sys_localtime)
+
+    # Files are different, install new TZ
+    if md5sum(zone_file, use_sudo=True) != md5sum(sys_localtime, use_sudo=True):
+
+        if run_as_root('which timedatectl', quiet=True).succeeded:
+            run_as_root('timedatectl set-timezone %s' % name)
+
+        else:
+            remove(sys_localtime)
+            symlink(zone_file, sys_localtime, use_sudo=True)
+
+            # Save the choice if file exists
+            if is_file(sys_timezone):
+                require_file(sys_timezone,
+                             contents='%s\n' % name,
+                             use_sudo=True)
+            # Older time configuration file
+            if is_file(sys_clock):
+                res = run_as_root('cat %s' % quote(sys_clock), quiet=True)
+                if res.succeeded:
+                    file_data = ['ZONE="%s"' % name]
+                    for line in res.splitlines():
+                        if 'ZONE' not in line or line.startswith('#'):
+                            file_data.append(line)
+                    require_file(sys_clock,
+                                 contents="\n".join(file_data),
+                                 use_sudo=True)
+
+            require_service.restarted('cron')
