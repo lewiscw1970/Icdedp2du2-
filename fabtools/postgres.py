@@ -23,7 +23,7 @@ def user_exists(name):
     """
     with settings(hide('running', 'stdout', 'stderr', 'warnings'),
                   warn_only=True):
-        res = _run_as_pg('''psql -t -A -c "SELECT COUNT(*) FROM pg_user WHERE usename = '%(name)s';"''' % locals())
+        res = _run_as_pg('''psql -t -A -c "SELECT COUNT(*) FROM pg_user WHERE username = '%(name)s';"''' % locals())
     return (res == "1")
 
 
