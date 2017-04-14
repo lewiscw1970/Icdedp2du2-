@@ -69,7 +69,7 @@ def grep(command, grep_for, use_sudo=False):
     ``False`` otherwise.
     """
     func = use_sudo and run_as_root or run
-    command = "{command} | egrep '{grep_for}'" % locals()
+    command = "%(command)s | egrep '%(grep_for)s'" % locals()
     if func(command, warn_only=True, quiet=True).succeeded:
         return True
     return False

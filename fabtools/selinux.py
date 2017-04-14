@@ -5,7 +5,8 @@ from fabtools.editor import (Line, update_file)
 
 def add_port(port_type, port):
     if not grep('semanage port -l',
-                'http_port_t.*\s+{port}[\s+,\\n]'.format(port=port)):
+                'http_port_t.*\s+{port}[\s+,\\n]'.format(port=port),
+                use_sudo=True):
         sudo("semanage port -a -t %(port_type)s -p tcp %(port)s" % locals())
 
 
