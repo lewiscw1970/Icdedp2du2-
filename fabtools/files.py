@@ -315,10 +315,11 @@ def symlink(source, destination, use_sudo=False):
     func('/bin/ln -s {0} {1}'.format(quote(source), quote(destination)))
 
 
-def remove(path, recursive=False, use_sudo=False):
+def remove(path, recursive=False, force=False, use_sudo=False):
     """
     Remove a file or directory
     """
     func = use_sudo and run_as_root or run
     options = '-r ' if recursive else ''
+    options += '-f ' if force else ''
     func('/bin/rm {0}{1}'.format(options, quote(path)))
