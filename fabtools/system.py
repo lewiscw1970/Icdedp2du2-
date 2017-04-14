@@ -3,7 +3,7 @@ System settings
 ===============
 """
 
-from fabric.api import hide, run, settings
+from fabric.api import hide, run, settings, abort
 
 from fabtools.files import is_file
 from fabtools.utils import read_lines, run_as_root
@@ -308,3 +308,16 @@ def time():
 
     with settings(hide('running', 'stdout')):
         return int(run('date +%s'))
+
+
+def get_timezone():
+    if using_systemd():
+        cmd = 'timedatectl | sed -n \'/Time zone/ s/.*Time zone: \([^ ]*\).*/\\1/p\''
+        res = run(cmd)
+    else:
+        path = '/etc/sysconfig/clock'
+        cmd = 'sed -n \'/ZONE/ s/.*"\(.*\)".*/\\1/p\' {0}'.format(path)
+        res = run(cmd)
+    if not res.succeeded:
+        abort("Unable to get time zone")
+    return res.strip()
