@@ -315,9 +315,18 @@ def get_timezone():
         cmd = 'timedatectl | sed -n \'/Time zone/ s/.*Time zone: \([^ ]*\).*/\\1/p\''
         res = run(cmd)
     else:
-        path = '/etc/sysconfig/clock'
-        cmd = 'sed -n \'/ZONE/ s/.*"\(.*\)".*/\\1/p\' {0}'.format(path)
-        res = run(cmd)
+        family = distrib_family()
+        if family == 'debian':
+            path = '/etc/timezone'
+            cmd = 'cat {0}'.format(path)
+            res = run(cmd)
+        elif family == 'redhat':
+            path = '/etc/sysconfig/clock'
+            cmd = 'sed -n \'/ZONE/ s/.*"\(.*\)".*/\\1/p\' {0}'.format(path)
+            res = run(cmd)
+        else:
+            raise UnsupportedFamily(supported=['debian', 'redhat'])
+
     if not res.succeeded:
         abort("Unable to get time zone")
     return res.strip()
