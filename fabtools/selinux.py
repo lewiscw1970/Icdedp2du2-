@@ -35,7 +35,7 @@ def set_policy(policy='unset', permanent=True):
 
     if permanent:
         lines = [Line('^SELINUX[ \t]*=.*$', '=.*', '={0}'.format(policy))]
-        update_file('/etc/sysconfig/selinux', lines)
+        update_file('/etc/sysconfig/selinux', lines, use_sudo=True)
 
 
 def set_permissive(permanent=True):
