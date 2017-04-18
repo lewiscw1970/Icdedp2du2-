@@ -18,16 +18,16 @@ def open_port(port, proto, zone='public', permanent=True, reload_fw=True):
 
 
 def start():
-    systemd.start(name='firewalld')
+    systemd.start('firewalld')
 
 
 def stop():
-    systemd.stop(name='firewalld')
+    systemd.stop('firewalld')
 
 
 def enable():
-    systemd.enable(name='firewalld')
+    systemd.enable('firewalld')
 
 
 def disable():
-    systemd.disable(name='firewalld')
+    systemd.disable('firewalld')
