@@ -29,6 +29,7 @@ import fabtools.require.supervisor
 import fabtools.require.system
 import fabtools.require.tomcat
 import fabtools.require.users
+import fabtools.require.pecl
 
 from fabtools.require.files import (
     directory,
