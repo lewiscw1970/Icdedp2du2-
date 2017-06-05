@@ -1,9 +1,9 @@
 from fabtools.pecl import is_installed, install, uninstall
 
 
-def extension(name):
+def extension(name, version=None, force=False):
     if not is_installed(name):
-        install(name)
+        install(name, version, force)
 
 
 def extensions(ext_list):
