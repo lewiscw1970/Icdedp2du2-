@@ -290,36 +290,42 @@ def getmtime(path, use_sudo=False):
         return int(func('stat -c %%Y "%(path)s" ' % locals()).strip())
 
 
-def copy(source, destination, recursive=False, use_sudo=False):
+def copy(source, destination, recursive=False, use_sudo=False, do_quote=True):
     """
     Copy a file or directory
     """
     func = use_sudo and run_as_root or run
+    quote_func = quote if do_quote else lambda x: x
     options = '-r ' if recursive else ''
     func('/bin/cp {0}{1} {2}'.format(
-        options, quote(source), quote(destination)))
+        options, quote_func(source), quote_func(destination)))
 
 
-def move(source, destination, use_sudo=False):
+def move(source, destination, use_sudo=False, do_quote=True):
     """
     Move a file or directory
     """
     func = use_sudo and run_as_root or run
-    func('/bin/mv {0} {1}'.format(quote(source), quote(destination)))
+    quote_func = quote if do_quote else lambda x: x
+    func('/bin/mv {0} {1}'.format(quote_func(source), quote_func(destination)))
 
 
-def symlink(source, destination, use_sudo=False):
+def symlink(source, destination, use_sudo=False, do_quote=True):
     """
     Create a symbolic link to a file or directory
     """
     func = use_sudo and run_as_root or run
-    func('/bin/ln -s {0} {1}'.format(quote(source), quote(destination)))
+    quote_func = quote if do_quote else lambda x: x
+    func('/bin/ln -s {0} {1}'.format(
+          quote_func(source), quote_func(destination)))
 
 
-def remove(path, recursive=False, use_sudo=False):
+def remove(path, recursive=False, force=False, use_sudo=False, do_quote=True):
     """
     Remove a file or directory
     """
     func = use_sudo and run_as_root or run
+    quote_func = quote if do_quote else lambda x: x
     options = '-r ' if recursive else ''
-    func('/bin/rm {0}{1}'.format(options, quote(path)))
+    options += '-f ' if force else ''
+    func('/bin/rm {0}{1}'.format(options, quote_func(path)))

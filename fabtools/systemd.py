@@ -134,3 +134,16 @@ def stop_and_disable(service):
     """
     stop(service)
     disable(service)
+
+
+def status(service):
+    """
+    Run systemctl status ``service``
+
+    ::
+
+        fabtools.systemd.status('httpd')
+
+    .. note:: This function is idempotent.
+    """
+    action('status', service)

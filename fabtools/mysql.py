@@ -138,3 +138,35 @@ def create_database(name, owner=None, owner_host='localhost', charset='utf8',
             }, **kwargs)
 
     puts("Created MySQL database '%s'." % name)
+
+
+def table_empty(name, database, **kwargs):
+    """
+    Check if a MySQL table is empty
+    """
+    with settings(
+            hide('running', 'stdout', 'stderr', 'warnings'), warn_only=True):
+        res = query("""
+            use %(database)s;
+            SELECT * FROM %(name)s;""" % {
+                'name': name,
+                'database': database
+            }, **kwargs)
+
+    return res.succeeded and (res == '')
+
+
+def table_exists(name, database, **kwargs):
+    """
+    Check if a MySQL table exists.
+    """
+    with settings(
+            hide('running', 'stdout', 'stderr', 'warnings'), warn_only=True):
+        res = query("""
+            use %(database)s;
+            SHOW TABLES LIKE '%(name)s';""" % {
+                'name': name,
+                'database': database
+            }, **kwargs)
+
+    return res.succeeded and (res == name)

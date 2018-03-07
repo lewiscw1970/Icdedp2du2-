@@ -59,3 +59,17 @@ def read_file(path):
 
 def read_lines(path):
     return read_file(path).splitlines()
+
+
+def grep(command, grep_for, use_sudo=False):
+    """
+    Run a command and grep its output for a string.
+
+    Returns ``True`` if ``grep_for`` is found in the ``command``'s output,
+    ``False`` otherwise.
+    """
+    func = use_sudo and run_as_root or run
+    command = "%(command)s | egrep '%(grep_for)s'" % locals()
+    if func(command, warn_only=True, quiet=True).succeeded:
+        return True
+    return False
