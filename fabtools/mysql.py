@@ -33,6 +33,12 @@ def query(query, use_sudo=True, **kwargs):
     password = kwargs.get('mysql_password') or env.get('mysql_password')
     func_mysql = 'mysql'
     mysql_host = kwargs.get('mysql_host') or env.get('mysql_host')
+    defaults_file = kwargs.get('mysql_defaults_file') or env.get('mysql_defaults_file')
+
+    if defaults_file:
+        defaults_file = '--defaults-file=%s' % defaults_file
+    else:
+        defaults_file = ''
 
     options = [
         '--batch',
@@ -50,8 +56,9 @@ def query(query, use_sudo=True, **kwargs):
         options.append('--host=%s' % quote(mysql_host))
     options = ' '.join(options)
 
-    return func('%(cmd)s %(options)s --execute=%(query)s' % {
+    return func('%(cmd)s %(def)s %(options)s --execute=%(query)s' % {
         'cmd': func_mysql,
+        'def': defaults_file,
         'options': options,
         'query': quote(query),
     })
