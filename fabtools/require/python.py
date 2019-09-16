@@ -44,7 +44,7 @@ def setuptools(version=MIN_SETUPTOOLS_VERSION, python_cmd='python'):
         install_setuptools(python_cmd=python_cmd)
 
 
-def pip(version=MIN_PIP_VERSION, pip_cmd='pip', python_cmd='python'):
+def pip(version=MIN_PIP_VERSION, pip_cmd='pip', python_cmd='python', pty=False):
     """
     Require `pip`_ to be installed.
 
@@ -55,11 +55,11 @@ def pip(version=MIN_PIP_VERSION, pip_cmd='pip', python_cmd='python'):
     """
     setuptools(python_cmd=python_cmd)
     if not is_pip_installed(version, python_cmd=python_cmd, pip_cmd=pip_cmd):
-        install_pip(python_cmd=python_cmd)
+        install_pip(python_cmd=python_cmd, pty=pty)
 
 
 def package(pkg_name, url=None, pip_cmd='pip', python_cmd='python',
-            allow_external=False, allow_unverified=False, **kwargs):
+            allow_external=False, allow_unverified=False, pty=False, **kwargs):
     """
     Require a Python package.
 
@@ -87,18 +87,18 @@ def package(pkg_name, url=None, pip_cmd='pip', python_cmd='python',
 
     .. _pip installer: http://www.pip-installer.org/
     """
-    pip(MIN_PIP_VERSION, python_cmd=python_cmd)
+    pip(MIN_PIP_VERSION, python_cmd=python_cmd, pty=pty)
     if not is_installed(pkg_name, python_cmd=python_cmd, pip_cmd=pip_cmd):
         install(url or pkg_name,
                 python_cmd=python_cmd,
                 pip_cmd=pip_cmd,
                 allow_external=[url or pkg_name] if allow_external else [],
                 allow_unverified=[url or pkg_name] if allow_unverified else [],
-                **kwargs)
+                pty=pty, **kwargs)
 
 
 def packages(pkg_list, pip_cmd='pip', python_cmd='python',
-             allow_external=None, allow_unverified=None, **kwargs):
+             allow_external=None, allow_unverified=None, pty=False, **kwargs):
     """
     Require several Python packages.
 
@@ -126,11 +126,12 @@ def packages(pkg_list, pip_cmd='pip', python_cmd='python',
                 pip_cmd=pip_cmd,
                 allow_external=allow_external,
                 allow_unverified=allow_unverified,
-                **kwargs)
+                pty=pty, **kwargs)
 
 
 def requirements(filename, pip_cmd='pip', python_cmd='python',
-                 allow_external=None, allow_unverified=None, **kwargs):
+                 allow_external=None, allow_unverified=None,
+                 pty=False, **kwargs):
     """
     Require Python packages from a pip `requirements file`_.
 
@@ -154,13 +155,13 @@ def requirements(filename, pip_cmd='pip', python_cmd='python',
     pip(MIN_PIP_VERSION, python_cmd=python_cmd)
     install_requirements(filename, python_cmd=python_cmd, pip_cmd=pip_cmd,
                          allow_external=allow_external,
-                         allow_unverified=allow_unverified, **kwargs)
+                         allow_unverified=allow_unverified, pty=pty, **kwargs)
 
 
 def virtualenv(directory, system_site_packages=False, venv_python=None,
                use_sudo=False, user=None, clear=False, prompt=None,
                virtualenv_cmd='virtualenv', pip_cmd='pip',
-               python_cmd='python'):
+               python_cmd='python', pty=False):
     """
     Require a Python `virtual environment`_.
 
@@ -174,7 +175,7 @@ def virtualenv(directory, system_site_packages=False, venv_python=None,
     """
 
     package('virtualenv', use_sudo=True, pip_cmd=pip_cmd,
-            python_cmd=python_cmd)
+            python_cmd=python_cmd, pty=pty)
 
     if not virtualenv_exists(directory):
         create_virtualenv(

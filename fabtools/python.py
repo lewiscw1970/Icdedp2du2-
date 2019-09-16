@@ -54,7 +54,7 @@ def is_pip_installed(version=None, python_cmd='python', pip_cmd='pip'):
                 return True
 
 
-def install_pip(python_cmd='python', use_sudo=True):
+def install_pip(python_cmd='python', use_sudo=True, pty=False):
     """
     Install the latest version of `pip`_, using the given Python
     interpreter.
@@ -71,6 +71,13 @@ def install_pip(python_cmd='python', use_sudo=True):
         is no need to install it yourself in this case.
 
     .. _pip: http://www.pip-installer.org/
+
+    .. note::
+        On some distros when installing pip system-wide with help of sudo
+        you might encounter rare error message:
+        ``sudo: sorry, you must have a tty to run sudo``.
+        In such circumstances you should run ``install_pip``
+        with argument ``pty=True``.
     """
 
     with cd('/tmp'):
@@ -79,9 +86,9 @@ def install_pip(python_cmd='python', use_sudo=True):
 
         command = '%(python_cmd)s get-pip.py' % locals()
         if use_sudo:
-            run_as_root(command, pty=False)
+            run_as_root(command, pty=pty)
         else:
-            run(command, pty=False)
+            run(command, pty=pty)
 
         run('rm -f get-pip.py')
 
@@ -111,8 +118,9 @@ def is_installed(package, python_cmd='python', pip_cmd='pip'):
 
 
 def install(packages, upgrade=False, download_cache=None, allow_external=None,
-            allow_unverified=None, quiet=False, python_cmd='python', pip_cmd='pip', use_sudo=False,
-            user=None, exists_action=None):
+            allow_unverified=None, quiet=False,
+            python_cmd='python', pip_cmd='pip', use_sudo=False,
+            user=None, exists_action=None, pty=False):
     """
     Install Python package(s) using `pip`_.
 
@@ -135,6 +143,13 @@ def install(packages, upgrade=False, download_cache=None, allow_external=None,
         fabtools.python.install(['pkg1', 'pkg2'], use_sudo=True)
 
     .. _pip: http://www.pip-installer.org/
+
+    .. note::
+        On some distros when installing packages system-wide with help of sudo
+        you might encounter rare error message:
+        ``sudo: sorry, you must have a tty to run sudo``.
+        In such circumstances you should run ``install`` with argument 
+        ``pty=True``.
     """
     if isinstance(packages, six.string_types):
         packages = [packages]
@@ -169,15 +184,16 @@ def install(packages, upgrade=False, download_cache=None, allow_external=None,
     command = '%(python_cmd)s -m %(pip_cmd)s install %(options)s %(packages)s' % locals()
 
     if use_sudo:
-        sudo(command, user=user, pty=False)
+        sudo(command, user=user, pty=pty)
     else:
-        run(command, pty=False)
+        run(command, pty=pty)
 
 
 def install_requirements(filename, upgrade=False, download_cache=None,
                          allow_external=None, allow_unverified=None,
-                         quiet=False, python_cmd='python', pip_cmd='pip', use_sudo=False,
-                         user=None, exists_action=None):
+                         quiet=False, python_cmd='python', pip_cmd='pip',
+                         use_sudo=False, user=None, exists_action=None,
+                         pty=False):
     """
     Install Python packages from a pip `requirements file`_.
 
@@ -213,9 +229,9 @@ def install_requirements(filename, upgrade=False, download_cache=None,
     command = '%(python_cmd)s -m %(pip_cmd)s install %(options)s -r %(filename)s' % locals()
 
     if use_sudo:
-        sudo(command, user=user, pty=False)
+        sudo(command, user=user, pty=pty)
     else:
-        run(command, pty=False)
+        run(command, pty=pty)
 
 
 def create_virtualenv(directory, system_site_packages=False, venv_python=None,
