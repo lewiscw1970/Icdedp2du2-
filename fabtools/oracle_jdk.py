@@ -20,7 +20,7 @@ from fabtools.system import get_arch
 from fabtools.utils import run_as_root
 
 
-DEFAULT_VERSION = '7u25-b15'
+DEFAULT_VERSION = '8u121-b13'
 
 
 def install_from_oracle_site(version=DEFAULT_VERSION):
@@ -49,9 +49,13 @@ def install_from_oracle_site(version=DEFAULT_VERSION):
 
     extension = 'bin' if self_extracting_archive else 'tar.gz'
     filename = 'jdk-%(release)s-linux-%(arch)s.%(extension)s' % locals()
+    if major == '8':
+        token = 'e9e7ea248e2c4826b92b3f075a80e441/'
+    else:
+        token = ''
     download_path = posixpath.join('/tmp', filename)
     url = 'http://download.oracle.com/otn-pub/java/jdk/'\
-          '%(version)s/%(filename)s' % locals()
+          '%(version)s/%(token)s%(filename)s' % locals()
 
     _download(url, download_path)
 
