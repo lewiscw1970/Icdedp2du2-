@@ -144,7 +144,7 @@ def fetch(path, use_sudo=False, user=None, remote=None):
             run(cmd)
 
 
-def pull(path, use_sudo=False, user=None, force=False):
+def pull(path, use_sudo=False, user=None, force=False, ff_only=False):
     """
     Fetch changes from the default remote repository and merge them.
 
@@ -163,6 +163,8 @@ def pull(path, use_sudo=False, user=None, force=False):
     :type user: str
     :param force: If ``True``, append the ``--force`` option to the command.
     :type force: bool
+    :param ff_only: If ``True``, append the ``--ff-only`` option to the command.
+    :type ff_only: bool
     """
 
     if path is None:
@@ -172,6 +174,8 @@ def pull(path, use_sudo=False, user=None, force=False):
     options = []
     if force:
         options.append('--force')
+    if ff_only:
+        options.append('--ff-only')
     options = ' '.join(options)
 
     cmd = 'git pull %s' % options
