@@ -144,6 +144,39 @@ def fetch(path, use_sudo=False, user=None, remote=None):
             run(cmd)
 
 
+def get_remote_url(path, name='origin', use_sudo=False, user=None):
+    """
+    Returns the url of a given remote of a given Git working copy.
+
+    :param path: Path of the working copy directory.  This directory must exist
+                 and be a Git working copy.
+    :type path: str
+
+    :param name: Name of the remote to get the url of.
+    :type path: str
+
+    :param use_sudo: If ``True`` execute ``git`` with
+                     :func:`fabric.operations.sudo`, else with
+                     :func:`fabric.operations.run`.
+    :type use_sudo: bool
+
+    :param user: If ``use_sudo is True``, run :func:`fabric.operations.sudo`
+                 with the given user.  If ``use_sudo is False`` this parameter
+                 has no effect.
+    :type user: str
+    """
+
+    cmd = 'git config --get remote.%s.url' % name
+
+    with cd(path):
+        if use_sudo and user is None:
+            return str(run_as_root(cmd))
+        elif use_sudo:
+            return str(sudo(cmd, user=user))
+        else:
+            return str(run(cmd))
+
+
 def pull(path, use_sudo=False, user=None, force=False):
     """
     Fetch changes from the default remote repository and merge them.

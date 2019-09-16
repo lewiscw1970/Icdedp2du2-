@@ -11,7 +11,7 @@ This module provides high-level tools for managing `Git`_ repositories.
 from fabric.api import run
 
 from fabtools import git
-from fabtools.files import is_dir
+from fabtools.files import is_dir, remove
 from fabtools.system import UnsupportedFamily, distrib_family
 
 
@@ -107,17 +107,26 @@ def working_copy(remote_url, path=None, branch="master", update=True,
         if path.endswith('.git'):
             path = path[:-4]
 
-    if is_dir(path, use_sudo=use_sudo):
-        # always fetch changesets from remote and checkout branch / tag
-        git.fetch(path=path, use_sudo=use_sudo, user=user)
-        git.checkout(path=path, branch=branch, use_sudo=use_sudo, user=user)
-        if update:
-            # only 'merge' if update is True
-            git.pull(path=path, use_sudo=use_sudo, user=user)
-
-    elif not is_dir(path, use_sudo=use_sudo):
+    def clone():
         git.clone(remote_url, path=path, use_sudo=use_sudo, user=user)
         git.checkout(path=path, branch=branch, use_sudo=use_sudo, user=user)
+
+    if is_dir(path, use_sudo=use_sudo):
+        if git.get_remote_url(path) == remote_url:
+            # always fetch changesets from remote and checkout branch / tag
+            git.fetch(path=path, use_sudo=use_sudo, user=user)
+            git.checkout(path=path, branch=branch, use_sudo=use_sudo,
+                         user=user)
+            if update:
+                # only 'merge' if update is True
+                git.pull(path=path, use_sudo=use_sudo, user=user)
+
+        else:
+            remove(path=path, recursive=True, use_sudo=use_sudo)
+            clone()
+
+    elif not is_dir(path, use_sudo=use_sudo):
+        clone()
 
     else:
         raise ValueError("Invalid combination of parameters.")
