@@ -14,8 +14,10 @@ from fabtools.utils import run_as_root
 
 
 def action(action, service):
+    if not service.endswith('.service'):
+        service += '.service'
     return run_as_root(
-        'systemctl %s %s.service --no-pager' % (action, service,)
+        'systemctl %s %s --no-pager' % (action, service,)
     )
 
 
