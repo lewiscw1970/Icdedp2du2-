@@ -9,6 +9,7 @@ import fabtools.require.docker
 import fabtools.require.files
 import fabtools.require.git
 import fabtools.require.mercurial
+import fabtools.require.mariadb
 import fabtools.require.mysql
 import fabtools.require.network
 import fabtools.require.nginx
