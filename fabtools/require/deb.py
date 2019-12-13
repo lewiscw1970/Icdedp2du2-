@@ -226,7 +226,7 @@ def uptodate_index(quiet=True, max_age=86400):
     Require an up-to-date package index.
 
     This will update the package index (using ``apt-get update``) if the last
-    update occured more than *max_age* ago.
+    update occurred more than *max_age* ago.
 
     *max_age* can be specified either as an integer (a value in seconds),
     or as a dictionary whose keys are units (``seconds``, ``minutes``,
